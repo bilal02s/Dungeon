@@ -1,5 +1,6 @@
 Width = 1000
 Height = 680
+tileLength = 40
 
 require 'gameElements/Resources'
 
