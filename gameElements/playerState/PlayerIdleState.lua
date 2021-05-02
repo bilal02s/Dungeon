@@ -5,9 +5,9 @@ function PlayerIdleState:init(player)
 
 	self.speed = 300
 
-	self.scale = player.scale
-	self.height = player.height
-	self.width = player.width
+	self.scale = player.scale or 2.5
+	self.height = player.height or 40
+	self.width = player.width or 40
 
 	self.image = player.images['idle']
 	self.frame = player.frames['idle']
@@ -19,6 +19,8 @@ function PlayerIdleState:open(param)
 	self.x = param.x
 	self.y = param.y
 	self.direction = param.direction
+
+	self.animation:change(self.direction)
 end
 
 function PlayerIdleState:update(dt)

@@ -9,15 +9,15 @@ function PlayerSwingSword:init(player)
 	self.height = player.height
 	self.width = player.width
 
-	self.image = player.images['walk']
-	self.frame = player.frames['walk']
+	self.image = player.images['swingSword']
+	self.frame = player.frames['swingSword']
 
-	self.animation = AnimationState(player.animation()['walk'])
+	self.animation = AnimationState(player.animation()['swingSword'])
 	self.oldFrame = 1
 end
 
 function PlayerSwingSword:open(param)
-	self.x = param.x
+	self.x = param.x - 20
 	self.y = param.y
 	self.direction = param.direction
 	self.animation:change(param.direction)
@@ -29,7 +29,7 @@ function PlayerSwingSword:update(dt)
 		self.oldFrame = self.animation.current.currentFrame
 
 		if self.oldFrame == 1 then
-			self.player:change('walk', {x = self.x, y = self.y, direction = self.direction})
+			self.player:change('walk', {x = self.x + 20, y = self.y, direction = self.direction})
 		end
 	end
 

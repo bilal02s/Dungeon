@@ -6,6 +6,10 @@ require 'gameElements/Resources'
 
 function love.load()
 	love.window.setMode(Width, Height, {fullscreen = false, resizable = true, vsync = true})
+	love.window.setTitle('Dungeon')
+	--love.graphics.setDefaultFilter('nearest', 'nearest')
+
+	math.randomseed(os.time())
 
 	stateMachine = StateMachine({
 		['start'] = function() return StartState() end,

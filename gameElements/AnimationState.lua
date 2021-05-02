@@ -27,7 +27,7 @@ function AnimationState:update(dt)
 
 		if self.timer > self.current.interval then
 			self.timer = self.timer % self.current.interval
-			self.current.currentFrame = (self.current.currentFrame + 1)%(#self.current.frames + 1)
+			self.current.currentFrame = math.max(1, (self.current.currentFrame + 1)%(#self.current.frames + 1))
 		end
 	end
 end

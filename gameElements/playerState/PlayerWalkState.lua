@@ -1,9 +1,10 @@
 PlayerWalkState = Class{__includes = BaseState}
 
-function PlayerWalkState:init(player)
+function PlayerWalkState:init(playState, player)
 	self.player = player
+	self.playState = playState
 
-	self.speed = 500
+	self.speed = 200
 
 	self.scale = player.scale
 	self.height = player.height
@@ -23,7 +24,7 @@ function PlayerWalkState:open(param)
 end
 
 function PlayerWalkState:update(dt)
-	if not love.keyboard.wasPressed('left') or not love.keyboard.wasPressed('up') or not love.keyboard.wasPressed('right') or not love.keyboard.wasPressed('down') then
+	if (not love.keyboard.isDown('left')) and (not love.keyboard.isDown('up')) and (not love.keyboard.isDown('right')) and (not love.keyboard.isDown('down')) then
 		self.player:change('idle', {x = self.x, y = self.y, direction = self.direction})
 	end
 
@@ -51,6 +52,8 @@ function PlayerWalkState:update(dt)
 	if love.keyboard.wasPressed('space') then
 		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction})
 	end
+
+	self.animation:update(dt)
 end
 
 function PlayerWalkState:draw()
