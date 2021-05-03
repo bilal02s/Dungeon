@@ -31,9 +31,9 @@ local struct2 = {
 function StartState:update(dt)
 	if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
 		stateMachine:change('play', {
-			struct = {{struct2}},
-			objects = {{}},
-			entities = {{}},
+			struct = {{struct1, struct2}},
+			objects = {{}, {}},
+			entities = {{}, {}},
 			initX = 1,
 			initY = 1,
 		})

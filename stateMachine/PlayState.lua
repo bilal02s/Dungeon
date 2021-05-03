@@ -6,8 +6,8 @@ function PlayState:init()
 		['shift'] = function() return DungeonShiftState(self) end,
 	})
 	self.player = PlayerState({
-		['idle'] = function() return PlayerIdleState(self, self.player) end,
-		['walk'] = function() return PlayerWalkState(self.player) end,
+		['idle'] = function() return PlayerIdleState(self.player) end,
+		['walk'] = function() return PlayerWalkState(self, self.player) end,
 		['swingSword'] = function() return PlayerSwingSword(self.player) end,
 	})
 	self.player.scale = 2.5
@@ -69,6 +69,7 @@ function PlayState:open(param)
 		x = Width/2,
 		y = Height/2,
 		direction = 'down',
+		currentRoom = self.currentRoom
 	})
 end
 
@@ -81,18 +82,21 @@ function PlayState:change(state, param)
 			currentRoom = self.currentRoom,
 			nextRoom = self.nextRoom,
 			player = self.player,
+			direction = param.direction,
 		})
 		self.currentRoom = self.nextRoom
 		self.nextRoom = nil
 	elseif state == 'play' then
-
+		self.stateMachine:change('play', param)
 	end
 end
 
 function PlayState:update(dt)
 	self.stateMachine:update(dt)
+	Timer.update(dt)
 end
 
 function PlayState:draw()
+	love.graphics.translate(-self.cameraX, -self.cameraY)
 	self.stateMachine:draw()
 end

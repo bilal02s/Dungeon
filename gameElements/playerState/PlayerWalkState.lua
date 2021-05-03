@@ -21,11 +21,12 @@ function PlayerWalkState:open(param)
 	self.y = param.y
 	self.direction = param.direction
 	self.animation:change(param.direction)
+	self.currentRoom = param.currentRoom
 end
 
 function PlayerWalkState:update(dt)
 	if (not love.keyboard.isDown('left')) and (not love.keyboard.isDown('up')) and (not love.keyboard.isDown('right')) and (not love.keyboard.isDown('down')) then
-		self.player:change('idle', {x = self.x, y = self.y, direction = self.direction})
+		self.player:change('idle', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
 	end
 
 	if love.keyboard.isDown('up') then
@@ -50,7 +51,13 @@ function PlayerWalkState:update(dt)
 	end
 
 	if love.keyboard.wasPressed('space') then
-		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction})
+		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
+	end
+
+	if self.x > self.currentRoom.offsetX + 7*Width/8 then
+		self.playState:change('shift', {nextX = 1, nextY = 0, direction = 'right'})
+	elseif self.x < self.currentRoom.offsetX + 1*Width/8 then
+		self.playState:change('shift', {nextX = -1, nextY = 0, direction = 'left'})
 	end
 
 	self.animation:update(dt)

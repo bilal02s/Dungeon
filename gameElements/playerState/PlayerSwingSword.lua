@@ -22,6 +22,7 @@ function PlayerSwingSword:open(param)
 	self.direction = param.direction
 	self.animation:change(param.direction)
 	self.animation:refresh()
+	self.currentRoom = param.currentRoom
 end
 
 function PlayerSwingSword:update(dt)
@@ -29,7 +30,7 @@ function PlayerSwingSword:update(dt)
 		self.oldFrame = self.animation.current.currentFrame
 
 		if self.oldFrame == 1 then
-			self.player:change('walk', {x = self.x + 20, y = self.y, direction = self.direction})
+			self.player:change('walk', {x = self.x + 20, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
 		end
 	end
 

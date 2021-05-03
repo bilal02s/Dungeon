@@ -19,23 +19,24 @@ function PlayerIdleState:open(param)
 	self.x = param.x
 	self.y = param.y
 	self.direction = param.direction
+	self.currentRoom = param.currentRoom
 
 	self.animation:change(self.direction)
 end
 
 function PlayerIdleState:update(dt)
 	if love.keyboard.wasPressed('up') then
-		self.player:change('walk', {x = self.x, y = self.y, direction = 'up'})
+		self.player:change('walk', {x = self.x, y = self.y, direction = 'up', currentRoom = self.currentRoom})
 	elseif love.keyboard.wasPressed('right') then
-		self.player:change('walk', {x = self.x, y = self.y, direction = 'right'})
+		self.player:change('walk', {x = self.x, y = self.y, direction = 'right', currentRoom = self.currentRoom})
 	elseif love.keyboard.wasPressed('down') then
-		self.player:change('walk', {x = self.x, y = self.y, direction = 'down'})
+		self.player:change('walk', {x = self.x, y = self.y, direction = 'down', currentRoom = self.currentRoom})
 	elseif love.keyboard.wasPressed('left') then
-		self.player:change('walk', {x = self.x, y = self.y, direction = 'left'})
+		self.player:change('walk', {x = self.x, y = self.y, direction = 'left', currentRoom = self.currentRoom})
 	end
 
 	if love.keyboard.wasPressed('space') then
-		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction})
+		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
 	end
 end
 
