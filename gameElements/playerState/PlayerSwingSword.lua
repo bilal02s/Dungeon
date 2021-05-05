@@ -13,11 +13,12 @@ function PlayerSwingSword:init(player)
 	self.frame = player.frames['swingSword']
 
 	self.animation = AnimationState(player.animation()['swingSword'])
-	self.oldFrame = 1
+	self.hurtBox = player.hurtBoxes['swingSword']
+	self.prevFrame = 1
 end
 
 function PlayerSwingSword:open(param)
-	self.x = param.x - 20
+	self.x = param.x
 	self.y = param.y
 	self.direction = param.direction
 	self.animation:change(param.direction)
@@ -26,11 +27,11 @@ function PlayerSwingSword:open(param)
 end
 
 function PlayerSwingSword:update(dt)
-	if self.oldFrame ~= self.animation.current.currentFrame then
-		self.oldFrame = self.animation.current.currentFrame
+	if self.prevFrame ~= self.animation.current.currentFrame then
+		self.prevFrame = self.animation.current.currentFrame
 
-		if self.oldFrame == 1 then
-			self.player:change('walk', {x = self.x + 20, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
+		if self.prevFrame == 1 then
+			self.player:change('walk', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
 		end
 	end
 
@@ -38,5 +39,6 @@ function PlayerSwingSword:update(dt)
 end
 
 function PlayerSwingSword:draw()
-	love.graphics.draw(images[self.image], frames[self.frame][self.animation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
+	love.graphics.draw(images[self.image], frames[self.frame][self.animation:getCurrentFrame()], self.x - 20, self.y - 20, 0, self.scale, self.scale)
+	love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
 end

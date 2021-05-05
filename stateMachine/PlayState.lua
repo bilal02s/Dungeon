@@ -45,6 +45,14 @@ function PlayState:init()
 			},
 		}
 	end
+	self.player.hurtBoxes = {
+		['walk'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
+		['idle'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
+		['swingSword'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
+	}
+	self.player.hitBoxes = {
+		['swingSword'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
+	}
 
 	self.cameraX = 0
 	self.cameraY = 0

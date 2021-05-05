@@ -13,6 +13,7 @@ function PlayerIdleState:init(player)
 	self.frame = player.frames['idle']
 
 	self.animation = AnimationState(player.animation()['idle'])
+	self.hurtBox = player.hurtBoxes['idle']
 end
 
 function PlayerIdleState:open(param)
@@ -41,5 +42,6 @@ function PlayerIdleState:update(dt)
 end
 
 function PlayerIdleState:draw()
-	love.graphics.draw(images[self.image], frames[self.frame][self.animation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
+	love.graphics.draw(images[self.image], frames[self.frame][self.animation:getCurrentFrame()], self.x, self.y - 20, 0, self.scale, self.scale)
+	love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
 end
