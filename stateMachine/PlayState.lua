@@ -46,9 +46,9 @@ function PlayState:init()
 		}
 	end
 	self.player.hurtBoxes = {
-		['walk'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
-		['idle'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
-		['swingSword'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
+		['walk'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 10} end,
+		['idle'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 10} end,
+		['swingSword'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 10} end,
 	}
 	self.player.hitBoxes = {
 		['swingSword'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
@@ -74,17 +74,21 @@ function PlayState:open(param)
 		player = self.player
 	})
 	self.player:change('idle', {
-		x = Width/2,
-		y = Height/2,
+		x = Width/2 + (initX - 1)*Width,
+		y = Height/2 + (initY - 1)*Height,
 		direction = 'down',
 		currentRoom = self.currentRoom
 	})
+	self.cameraX = (initX - 1)*Width
+	self.cameraY = (initY - 1)*Height
 end
 
 function PlayState:change(state, param)
 	if state == 'shift' then
+		oldy = self.roomX
 		self.roomX = self.roomX + param.nextX
 		self.roomY = self.roomY + param.nextY
+		newy = self.roomX
 		self.nextRoom = Room(self.struct[self.roomY][self.roomX], self.objects[self.roomY][self.roomX], self.entities[self.roomY][self.roomX], {(self.roomX - 1)*Width, (self.roomY - 1)*Height})
 		self.stateMachine:change('shift', {
 			currentRoom = self.currentRoom,
@@ -107,4 +111,9 @@ end
 function PlayState:draw()
 	love.graphics.translate(-self.cameraX, -self.cameraY)
 	self.stateMachine:draw()
+	for k, v in ipairs(self.struct[2][2]) do
+		--love.graphics.print(tostring(k)..tostring(v), 100 + (self.roomX-1)*Width, 100 + (self.roomY-1)*Height + k * 50)
+	end
+	love.graphics.print(tostring(self.roomY)..' '..tostring(self.roomX), 100 + (self.roomX-1)*Width, 100 + (self.roomY-1)*Height)
+	love.graphics.print(tostring(oldy)..' '..tostring(newy), 100 + (self.roomX-1)*Width, 150 + (self.roomY-1)*Height)
 end

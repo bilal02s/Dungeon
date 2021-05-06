@@ -7,22 +7,37 @@ function createMap(k)
 				{false, true, false, true, true},
 				{false, true, false, true, false},
 				{true, true, true, true, true},
-			}
+			}]]
 			{{false, true, true,},
 			 {true, true, true},
-			 {false, true, false}},]]
-			{{true, true}},
+			 {false, true, false}},
 			rooms = {
 				[1] = {row = 12, col = 12,
 					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}},
 						{{3, 3, id = 9}, {6, 3, id = 10}, {6, 6, id = 11}, {3, 6, id = 12}, {3, 3, id = 9}}
 					},
-					doors = {[1] = {1, 6}, [2] = {6, 1}, [3] = {12, 6}, [4] = {6, 12}},
+					doors = {[3] = {12, 6}, [4] = {6, 12}},
 				},
 				[2] = {row = 12, col = 12,
 					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
+					doors = {[1] = {1, 6}, [4] = {6, 12}},
+				},
+				[3] = {row = 12, col = 15,
+					corners = {{{1, 1, id = 5}, {15, 1, id = 6}, {15, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
+					doors = {[3] = {15, 6}},
+				},
+				[4] = {row = 12, col = 12,
+					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
 					doors = {[1] = {1, 6}, [2] = {6, 1}, [3] = {12, 6}, [4] = {6, 12}},
-				}
+				},
+				[5] = {row = 12, col = 12,
+					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
+					doors = {[1] = {1, 6}, [2] = {6, 1}},
+				},
+				[6] = {row = 12, col = 12,
+					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
+					doors = {[2] = {6, 1}},
+				},
 			}
 		}
 	}

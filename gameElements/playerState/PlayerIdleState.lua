@@ -43,5 +43,5 @@ end
 
 function PlayerIdleState:draw()
 	love.graphics.draw(images[self.image], frames[self.frame][self.animation:getCurrentFrame()], self.x, self.y - 20, 0, self.scale, self.scale)
-	love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
+	love.graphics.rectangle('line', self.x, self.y + 20, self.width, self.height - 10)
 end

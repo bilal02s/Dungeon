@@ -15,6 +15,7 @@ function GameObject:init(pos, def)
 	self.box = def.box(self)
 	self.collidable = def.collidable
 	self.onCollide = def.onCollide
+	self.inPlay = true
 end
 
 function Box(x, y, width, height)
@@ -32,4 +33,5 @@ end
 
 function GameObject:draw()
 	love.graphics.draw(images[self.image], frames[self.quad][self.animation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
+	--love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
 end

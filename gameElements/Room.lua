@@ -96,7 +96,7 @@ function wall(k)
 	[10] = makeWall(k),
 	[11] = makeWall(k),
 	[12] = makeWall(k),
-	[13] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', xOffset = -20, --LEFT
+	[13] = {scale = 2.5, width = 24, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', xOffset = -20, --LEFT
 		animation = function()
 			return {
 				['close'] = {frames = {5}, interval = 10, currentFrame = 1},
@@ -107,9 +107,14 @@ function wall(k)
 			return Box(self.x, self.y, self.width, self.height)
 		end,
 		initialise = function(self) end,
-		onCollide = function() end,
+		onCollide = function(self, player)
+			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+				player:shift('left')
+				self.inPlay = false
+			end
+		end,
 	},
-	[14] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', yOffset = -19, -- UP
+	[14] = {scale = 2.5, width = 32, height = 24, image = 'tiles', quad = 'doors', collidable = true, state = 'close', yOffset = -20, -- UP
 		animation = function()
 			return {
 				['close'] = {frames = {2}, interval = 10, currentFrame = 1},
@@ -120,7 +125,12 @@ function wall(k)
 			return Box(self.x, self.y, self.width, self.height)
 		end,
 		initialise = function(self) end,
-		onCollide = function() end,
+		onCollide = function(self, player)
+			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+				player:shift('up')
+				self.inPlay = false
+			end
+		end,
 	},
 	[15] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', --RIGHT
 		animation = function()
@@ -133,7 +143,12 @@ function wall(k)
 			return Box(self.x, self.y, self.width, self.height)
 		end,
 		initialise = function(self) end,
-		onCollide = function() end,
+		onCollide = function(self, player)
+			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+				player:shift('right')
+				self.inPlay = false
+			end
+		end,
 	},
 	[16] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', --DOWN
 		animation = function()
@@ -146,7 +161,12 @@ function wall(k)
 			return Box(self.x, self.y, self.width, self.height)
 		end,
 		initialise = function(self) end,
-		onCollide = function() end,
+		onCollide = function(self, player)
+			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+				player:shift('down')
+				self.inPlay = false
+			end
+		end,
 	},
 })[k]
 end
@@ -155,12 +175,15 @@ function makeRoom(structure, initX, initY)
 	local n = #structure
 	local m = #structure[1]
 	local room = {}
+	local counter = 1
 
 	for i = 1, n do
 		table.insert(room, {})
+		counter = 1
 
 		for k, v in ipairs(structure[i]) do
-			if v~=17 then table.insert(room[i], GameObject({(k-1)*40 + initX, (i-1)*40 + initY}, wall(v))) end
+			if v~=17 then room[i][counter] = GameObject({(k-1)*40 + initX, (i-1)*40 + initY}, wall(v)) end
+			counter = counter + 1
 		end
 	end
 
