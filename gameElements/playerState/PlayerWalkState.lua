@@ -1,6 +1,6 @@
 PlayerWalkState = Class{__includes = BaseState}
 
-function PlayerWalkState:init(playState, player)
+function PlayerWalkState:init(player, playState)
 	self.player = player
 	self.playState = playState
 
@@ -32,14 +32,16 @@ function PlayerWalkState:open(param)
 	local currentRoom = self.currentRoom
 	self.offsetX = currentRoom.initialX + currentRoom.offsetX
 	self.offsetY = currentRoom.initialY + currentRoom.offsetY
+	self.quadTree = currentRoom.quadTree
 end
 
 function PlayerWalkState:update(dt)
-	if (not love.keyboard.isDown('left')) and (not love.keyboard.isDown('up')) and (not love.keyboard.isDown('right')) and (not love.keyboard.isDown('down')) then
+	if not (love.keyboard.isDown('left') or love.keyboard.isDown('up') or love.keyboard.isDown('right') or love.keyboard.isDown('down')) then
 		self.player:change('idle', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
+		return nil
 	end
 
-	self.up, self.down, self.left, self.right = checkCollision(self:hurtBox(), self.currentRoom.structure, self.offsetX, self.offsetY, self.onCollide, self)
+	self.up, self.down, self.left, self.right = checkCollision(self:hurtBox(), self.quadTree:query(self:hurtBox()), self.onCollide, self)
 
 	if love.keyboard.isDown('up') and not self.up then
 		self.y = self.y - self.speed*dt
@@ -70,8 +72,6 @@ function PlayerWalkState:update(dt)
 end
 
 function PlayerWalkState:shift(direction)
-	self.player:change('idle', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
-
 	if direction == 'right' then
 		self.playState:change('shift', {nextX = 1, nextY = 0, direction = 'right'})
 	elseif direction == 'left' then
@@ -102,33 +102,14 @@ function AABB(entity1, entity2, p) -- p : precision
 	return true
 end
 
-function checkCollision(entity, objects, offsetX, offsetY, onCollide, self)
-	local floor = math.floor
-	local x1 = floor((entity.x - 1 - (offsetX or 0))/tileLength) + 1
-	local y1 = floor((entity.y - 1 - (offsetY or 0))/tileLength) + 1
-	local x2 = floor((entity.x + entity.width/2 - (offsetX or 0))/tileLength) + 1
-	local y2 = floor((entity.y + entity.height/2 - (offsetY or 0))/tileLength) + 1
-	local x3 = floor((entity.x + 1 + entity.width - (offsetX or 0))/tileLength) + 1
-	local y3 = floor((entity.y + 1 + entity.height - (offsetY or 0))/tileLength) + 1
-
-	local blocks = {
-		detectCollidedBlock(objects, x1, y1),
-		detectCollidedBlock(objects, x1, y2),
-		detectCollidedBlock(objects, x1, y3),
-		detectCollidedBlock(objects, x2, y1),
-		detectCollidedBlock(objects, x2, y3),
-		detectCollidedBlock(objects, x3, y1),
-		detectCollidedBlock(objects, x3, y2),
-		detectCollidedBlock(objects, x3, y3),
-	}
-
+function checkCollision(entity, objects, onCollide, self)
 	local down
 	local up
 	local left
 	local right
 
-	for k, block in pairs(blocks) do
-		if block.collidable and AABB(entity, block.box, 0) then
+	for k, block in pairs(objects) do
+		if AABB(entity, block.box, 0) then
 			local result = collision(entity, block.box, onCollide)
 			block:onCollide(self)
 

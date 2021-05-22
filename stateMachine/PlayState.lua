@@ -6,9 +6,9 @@ function PlayState:init()
 		['shift'] = function() return DungeonShiftState(self) end,
 	})
 	self.player = PlayerState({
-		['idle'] = function() return PlayerIdleState(self.player) end,
-		['walk'] = function() return PlayerWalkState(self, self.player) end,
-		['swingSword'] = function() return PlayerSwingSword(self.player) end,
+		['idle'] = function() return PlayerIdleState(self.player, self) end,
+		['walk'] = function() return PlayerWalkState(self.player, self) end,
+		['swingSword'] = function() return PlayerSwingSword(self.player, self) end,
 	})
 	self.player.scale = 2.5
 	self.player.height = 40
@@ -26,10 +26,10 @@ function PlayState:init()
 	self.player.animation = function()
 		return {
 			['walk'] = {
-				['up'] = {frames = {9, 10, 11, 12}, interval = 0.15, currentFrame = 1},
-				['down'] = {frames = {1, 2, 3, 4}, interval = 0.15, currentFrame = 1},
-				['left'] = {frames = {13, 14, 15, 16}, interval = 0.15, currentFrame = 1},
-				['right'] = {frames = {5, 6, 7, 8}, interval = 0.15, currentFrame = 1},
+				['up'] = {frames = {10, 11, 12, 9}, interval = 0.15, currentFrame = 1},
+				['down'] = {frames = {2, 3, 4, 1}, interval = 0.15, currentFrame = 1},
+				['left'] = {frames = {14, 15, 16, 13}, interval = 0.15, currentFrame = 1},
+				['right'] = {frames = {6, 7, 8, 5}, interval = 0.15, currentFrame = 1},
 			},
 			['idle'] = {
 				['up'] = {frames = {9}, interval = 10, currentFrame = 1},
@@ -53,6 +53,12 @@ function PlayState:init()
 	self.player.hitBoxes = {
 		['swingSword'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
 	}
+	function self.player:changeRoom(nextRoom)
+		self.current.quadTree = nextRoom.quadTree
+		self.current.currentRoom = nextRoom
+		self.current.offsetX = nextRoom.initialX + nextRoom.offsetX
+		self.current.offsetY = nextRoom.initialY + nextRoom.offsetY
+	end
 
 	self.cameraX = 0
 	self.cameraY = 0
@@ -73,22 +79,22 @@ function PlayState:open(param)
 		currentRoom = self.currentRoom,
 		player = self.player
 	})
+
 	self.player:change('idle', {
 		x = Width/2 + (initX - 1)*Width,
 		y = Height/2 + (initY - 1)*Height,
 		direction = 'down',
 		currentRoom = self.currentRoom
 	})
+
 	self.cameraX = (initX - 1)*Width
 	self.cameraY = (initY - 1)*Height
 end
 
 function PlayState:change(state, param)
 	if state == 'shift' then
-		oldy = self.roomX
 		self.roomX = self.roomX + param.nextX
 		self.roomY = self.roomY + param.nextY
-		newy = self.roomX
 		self.nextRoom = Room(self.struct[self.roomY][self.roomX], self.objects[self.roomY][self.roomX], self.entities[self.roomY][self.roomX], {(self.roomX - 1)*Width, (self.roomY - 1)*Height})
 		self.stateMachine:change('shift', {
 			currentRoom = self.currentRoom,
@@ -111,9 +117,4 @@ end
 function PlayState:draw()
 	love.graphics.translate(-self.cameraX, -self.cameraY)
 	self.stateMachine:draw()
-	for k, v in ipairs(self.struct[2][2]) do
-		--love.graphics.print(tostring(k)..tostring(v), 100 + (self.roomX-1)*Width, 100 + (self.roomY-1)*Height + k * 50)
-	end
-	love.graphics.print(tostring(self.roomY)..' '..tostring(self.roomX), 100 + (self.roomX-1)*Width, 100 + (self.roomY-1)*Height)
-	love.graphics.print(tostring(oldy)..' '..tostring(newy), 100 + (self.roomX-1)*Width, 150 + (self.roomY-1)*Height)
 end

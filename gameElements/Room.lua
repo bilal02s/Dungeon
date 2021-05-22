@@ -6,8 +6,23 @@ function Room:init(structure, objects, entities, offset)
 	self.initialY = (Height - self.row*tileLength)/2
 	self.offsetX = offset[1]
 	self.offsetY = offset[2]
+	self.totalOffsetX = self.offsetX + self.initialX
+	self.totalOffsetY = self.offsetY + self.initialY
 
 	self.structure = makeRoom(structure, self.initialX + self.offsetX, self.initialY + self.offsetY)
+	self.objects = objects
+	self.entities = entities
+
+	local boundaries = {x = self.totalOffsetX, y = self.totalOffsetY, width = self.col*tileLength, height = self.row*tileLength}
+	self.quadTree = QuadTree(boundaries, 4)
+
+	for k, row in pairs(self.structure) do
+		for k2, object in pairs(row) do
+			if object.collidable then
+				self.quadTree:insert(object)
+			end
+		end
+	end
 end
 
 function Room:update(dt)
@@ -71,6 +86,10 @@ function makeWall(k) -- 1/2 = corners; 3 = UL; 4 = DR
 end
 
 function wall(k)
+	if k > 0 and k < 13 then
+		return makeWall(k)
+	end
+
 	return ({
 	[0] = {scale = 1, width = 40, height = 40, image = 'tiles', quad = 'tiles', collidable = false, state = 'static',
 		animation = function()
@@ -84,18 +103,6 @@ function wall(k)
 		initialise = function(self) end,
 		onCollide = function() end,
 	},
-	[1] = makeWall(k),
-	[2] = makeWall(k),
-	[3] = makeWall(k),
-	[4] = makeWall(k),
-	[5] = makeWall(k),
-	[6] = makeWall(k),
-	[7] = makeWall(k),
-	[8] = makeWall(k),
-	[9] = makeWall(k),
-	[10] = makeWall(k),
-	[11] = makeWall(k),
-	[12] = makeWall(k),
 	[13] = {scale = 2.5, width = 24, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', xOffset = -20, --LEFT
 		animation = function()
 			return {
@@ -108,7 +115,7 @@ function wall(k)
 		end,
 		initialise = function(self) end,
 		onCollide = function(self, player)
-			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+			if self.inPlay and love.keyboard.isDown('left') then
 				player:shift('left')
 				self.inPlay = false
 			end
@@ -126,7 +133,7 @@ function wall(k)
 		end,
 		initialise = function(self) end,
 		onCollide = function(self, player)
-			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+			if self.inPlay and love.keyboard.isDown('up') then
 				player:shift('up')
 				self.inPlay = false
 			end
@@ -144,7 +151,7 @@ function wall(k)
 		end,
 		initialise = function(self) end,
 		onCollide = function(self, player)
-			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+			if  self.inPlay and love.keyboard.isDown('right') then
 				player:shift('right')
 				self.inPlay = false
 			end
@@ -162,7 +169,7 @@ function wall(k)
 		end,
 		initialise = function(self) end,
 		onCollide = function(self, player)
-			if AABB(self.box, player:hurtBox(), 0) and self.inPlay then
+			if self.inPlay and love.keyboard.isDown('down') then
 				player:shift('down')
 				self.inPlay = false
 			end

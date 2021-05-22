@@ -94,6 +94,7 @@ require 'gameElements/DungeonShiftState'
 require 'gameElements/Room'
 require 'gameElements/GameObject'
 require 'gameElements/Timer'
+require 'gameElements/QuadTree'
 
 require 'gameElements/playerState/PlayerWalkState'
 require 'gameElements/playerState/PlayerIdleState'
