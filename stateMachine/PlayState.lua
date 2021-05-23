@@ -26,10 +26,10 @@ function PlayState:init()
 	self.player.animation = function()
 		return {
 			['walk'] = {
-				['up'] = {frames = {10, 11, 12, 9}, interval = 0.15, currentFrame = 1},
-				['down'] = {frames = {2, 3, 4, 1}, interval = 0.15, currentFrame = 1},
-				['left'] = {frames = {14, 15, 16, 13}, interval = 0.15, currentFrame = 1},
-				['right'] = {frames = {6, 7, 8, 5}, interval = 0.15, currentFrame = 1},
+				['up'] = {frames = {10, 11, 12, 9}, interval = 0.1, currentFrame = 1},
+				['down'] = {frames = {2, 3, 4, 1}, interval = 0.1, currentFrame = 1},
+				['left'] = {frames = {14, 15, 16, 13}, interval = 0.1, currentFrame = 1},
+				['right'] = {frames = {6, 7, 8, 5}, interval = 0.1, currentFrame = 1},
 			},
 			['idle'] = {
 				['up'] = {frames = {9}, interval = 10, currentFrame = 1},
@@ -46,8 +46,8 @@ function PlayState:init()
 		}
 	end
 	self.player.hurtBoxes = {
-		['walk'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 10} end,
-		['idle'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 10} end,
+		['walk'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 15} end,
+		['idle'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 15} end,
 		['swingSword'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 10} end,
 	}
 	self.player.hitBoxes = {
@@ -74,7 +74,7 @@ function PlayState:open(param)
 	local initX = param.initX
 	local initY = param.initY
 
-	self.currentRoom = Room(self.struct[initY][initX], self.objects[initY][initX], self.entities[initY][initX], {(initX - 1)*Width, (initY - 1)*Height})
+	self.currentRoom = Room(self.struct[initY][initX], self.objects[initY][initX], self.entities[initY][initX], {(initX - 1)*Width, (initY - 1)*Height}, self.player)
 	self.stateMachine:change('play', {
 		currentRoom = self.currentRoom,
 		player = self.player
@@ -95,7 +95,9 @@ function PlayState:change(state, param)
 	if state == 'shift' then
 		self.roomX = self.roomX + param.nextX
 		self.roomY = self.roomY + param.nextY
-		self.nextRoom = Room(self.struct[self.roomY][self.roomX], self.objects[self.roomY][self.roomX], self.entities[self.roomY][self.roomX], {(self.roomX - 1)*Width, (self.roomY - 1)*Height})
+		local Y = self.roomY
+		local X = self.roomX
+		self.nextRoom = Room(self.struct[Y][X], self.objects[Y][X], self.entities[Y][X], {(X - 1)*Width, (Y - 1)*Height}, self.player)
 		self.stateMachine:change('shift', {
 			currentRoom = self.currentRoom,
 			nextRoom = self.nextRoom,

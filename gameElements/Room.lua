@@ -1,7 +1,8 @@
 Room = Class{}
 
-function Room:init(structure, objects, entities, offset)
+function Room:init(structure, objects, entities, offset, player)
 	self.col, self.row = getRoomSize(structure)
+	self.player = player
 	self.initialX = (Width - self.col*tileLength)/2
 	self.initialY = (Height - self.row*tileLength)/2
 	self.offsetX = offset[1]
@@ -9,12 +10,12 @@ function Room:init(structure, objects, entities, offset)
 	self.totalOffsetX = self.offsetX + self.initialX
 	self.totalOffsetY = self.offsetY + self.initialY
 
-	self.structure = makeRoom(structure, self.initialX + self.offsetX, self.initialY + self.offsetY)
-	self.objects = objects
-	self.entities = entities
-
 	local boundaries = {x = self.totalOffsetX, y = self.totalOffsetY, width = self.col*tileLength, height = self.row*tileLength}
 	self.quadTree = QuadTree(boundaries, 4)
+
+	self.structure, self.entities = makeRoom(structure, entities, player, self)
+	self.objects = objects
+	--self.entities = createEntities(entities, self.totalOffsetX, self.totalOffsetY)
 
 	for k, row in pairs(self.structure) do
 		for k2, object in pairs(row) do
@@ -22,6 +23,10 @@ function Room:init(structure, objects, entities, offset)
 				self.quadTree:insert(object)
 			end
 		end
+	end
+
+	for k, entity in pairs(self.entities) do
+		--self.quadTree:insert(entity)
 	end
 end
 
@@ -31,6 +36,10 @@ function Room:update(dt)
 			v2:update(dt)
 		end
 	end
+
+	for k, entity in pairs(self.entities) do
+		entity:update(dt)
+	end
 end
 
 function Room:draw()
@@ -38,6 +47,10 @@ function Room:draw()
 		for k2, v2 in pairs(v) do
 			v2:draw()
 		end
+	end
+
+	for k, entity in pairs(self.entities) do
+		entity:draw()
 	end
 end
 
@@ -178,10 +191,51 @@ function wall(k)
 })[k]
 end
 
-function makeRoom(structure, initX, initY)
+local entitiesData = {
+	[1] = {
+		width = 16, height = 16, scale = 2.5, health = 5, speed = 100, image = 'entities', quad = 'entities',
+		states = function(self)
+			return {
+				['idle'] = function() return EntityIdleState(self) end,
+				['walk'] = function() return EntityWalkState(self) end,
+			}
+		end,
+		animation = function()
+			return {
+				['idle'] = {
+					['up'] = {frames = {38}, interval = 10, currentFrame = 1},
+					['right'] = {frames = {26}, interval = 10, currentFrame = 1},
+					['down'] = {frames = {2}, interval = 10, currentFrame = 1},
+					['left'] = {frames = {14}, interval = 10, currentFrame = 1},
+				},
+				['walk'] = {
+					['up'] = {frames = {37, 38, 39}, interval = 0.15, currentFrame = 1},
+					['right'] = {frames = {25, 26, 27}, interval = 0.15, currentFrame = 1},
+					['down'] = {frames = {1, 2, 3}, interval = 0.15, currentFrame = 1},
+					['left'] = {frames = {13, 14, 15}, interval = 0.15, currentFrame = 1},
+				},
+			}
+		end,
+		box = function(self)
+			return Box(self.x, self.y + self.height/2, self.width, self.height/2)
+		end,
+		hurt = function(self, damage)
+			self.health = self.health - damage
+		end,
+		stateDecision = {
+			['idle'] = {'walk'},
+			['walk'] = {'walk'},
+		},
+	},
+}
+
+function makeRoom(structure, entities, player, Room)
 	local n = #structure
 	local m = #structure[1]
+	local initX = Room.totalOffsetX
+	local initY = Room.totalOffsetY
 	local room = {}
+	local Entities = {}
 	local counter = 1
 
 	for i = 1, n do
@@ -189,10 +243,20 @@ function makeRoom(structure, initX, initY)
 		counter = 1
 
 		for k, v in ipairs(structure[i]) do
-			if v~=17 then room[i][counter] = GameObject({(k-1)*40 + initX, (i-1)*40 + initY}, wall(v)) end
+			if v~=17 then
+				room[i][counter] = GameObject({(k-1)*40 + initX, (i-1)*40 + initY}, wall(v))
+			end
 			counter = counter + 1
 		end
 	end
 
-	return room
+	if entities then
+		for key, entity in pairs(entities) do
+			for k2, pos in pairs(entity) do
+				table.insert(Entities, Entity(entitiesData[key], pos, player, Room))
+			end
+		end
+	end
+
+	return room, Entities
 end

@@ -19,7 +19,7 @@ function PlayerWalkState:init(player, playState)
 		['right'] = function(block) self.x = block.x - self.width end,
 		['left'] = function(block) self.x = block.x + block.width end,
 		['up'] = function(block) self.y = block.y + block.height - 20 end,
-		['down'] = function(block) self.y = block.y - self.height - 10 end,
+		['down'] = function(block) self.y = block.y - self.height - 5 end,
 	}
 end
 
@@ -157,5 +157,5 @@ end
 
 function PlayerWalkState:draw()
 	love.graphics.draw(images[self.image], frames[self.frame][self.animation:getCurrentFrame()], self.x, self.y - 20, 0, self.scale, self.scale)
-	love.graphics.rectangle('line', self.x, self.y + 20, self.width, self.height - 10)
+	love.graphics.rectangle('line', self.x, self.y + 20, self.width, self.height - 15)
 end

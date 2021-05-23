@@ -9,6 +9,8 @@ function DungeonShiftState:open(param)
 	self.nextRoom = param.nextRoom
 	self.player = param.player
 	self.direction = param.direction
+	self.player.current.direction = self.direction
+	self.player.current.animation:change(self.direction)
 
 	self.nextX = self.nextRoom.offsetX
 	self.nextY = self.nextRoom.offsetY
@@ -17,8 +19,8 @@ function DungeonShiftState:open(param)
 		[self.playState] = {cameraX = self.nextX, cameraY = self.nextY},
 		[self.player.current] = {x = self.nextX + Width/2, y = self.nextY + Height/2}
 	}, function()
+		self.player:changeRoom(self.nextRoom)
 		self.playState:change('play', {player = self.player, currentRoom = self.nextRoom})
-		self.player.current.currentRoom = self.nextRoom
 	end)
 end
 

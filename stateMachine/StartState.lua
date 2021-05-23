@@ -30,10 +30,13 @@ local struct2 = {
 
 function StartState:update(dt)
 	if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
+		local struct
+		local entities
+		struct, entities = createMap(1)
 		stateMachine:change('play', {
-			struct = createMap(1), --{{struct1, struct2}},
+			struct = struct, --{{struct1, struct2}},
 			objects = {{{}, {}, {}},{{}, {}, {}},{{}, {}, {}}},
-			entities = {{{}, {}, {}},{{}, {}, {}},{{}, {}, {}}},
+			entities = entities,
 			initX = 2,
 			initY = 2,
 		})
