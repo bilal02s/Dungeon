@@ -108,6 +108,9 @@ require 'gameElements/GameObject'
 require 'gameElements/Timer'
 require 'gameElements/QuadTree'
 require 'gameElements/Entity'
+require 'gameElements/BinaryHeap'
+require 'gameElements/VisibilityGraph'
+require 'gameElements/PathFinding'
 
 require 'gameElements/playerStates/PlayerWalkState'
 require 'gameElements/playerStates/PlayerIdleState'
@@ -115,4 +118,5 @@ require 'gameElements/playerStates/PlayerSwingSword'
 
 require 'gameElements/entityStates/EntityIdleState'
 require 'gameElements/entityStates/EntityWalkState'
+require 'gameElements/entityStates/EntityFollowState'
 

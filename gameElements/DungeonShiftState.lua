@@ -12,12 +12,12 @@ function DungeonShiftState:open(param)
 	self.player.current.direction = self.direction
 	self.player.current.animation:change(self.direction)
 
-	self.nextX = self.nextRoom.offsetX
-	self.nextY = self.nextRoom.offsetY
+	self.nextOffsetX = self.nextRoom.offsetX
+	self.nextOffsetY = self.nextRoom.offsetY
 
 	Timer.tween(0.5, {
-		[self.playState] = {cameraX = self.nextX, cameraY = self.nextY},
-		[self.player.current] = {x = self.nextX + Width/2, y = self.nextY + Height/2}
+		[self.playState] = {cameraX = self.nextOffsetX, cameraY = self.nextOffsetY},
+		[self.player.current] = {x = self.nextOffsetX + Width/2, y = self.nextOffsetY + Height/2}
 	}, function()
 		self.player:changeRoom(self.nextRoom)
 		self.playState:change('play', {player = self.player, currentRoom = self.nextRoom})

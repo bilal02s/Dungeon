@@ -13,6 +13,7 @@ function Room:init(structure, objects, entities, offset, player)
 	local boundaries = {x = self.totalOffsetX, y = self.totalOffsetY, width = self.col*tileLength, height = self.row*tileLength}
 	self.quadTree = QuadTree(boundaries, 4)
 
+	self.objects = {}
 	self.structure, self.entities = makeRoom(structure, entities, player, self)
 	self.objects = objects
 	--self.entities = createEntities(entities, self.totalOffsetX, self.totalOffsetY)
@@ -193,11 +194,12 @@ end
 
 local entitiesData = {
 	[1] = {
-		width = 16, height = 16, scale = 2.5, health = 5, speed = 100, image = 'entities', quad = 'entities',
+		width = 16, height = 16, scale = 2.5, health = 5, speed = 100, image = 'entities', quad = 'entities', id = 1,
 		states = function(self)
 			return {
 				['idle'] = function() return EntityIdleState(self) end,
 				['walk'] = function() return EntityWalkState(self) end,
+				['follow'] = function() return EntityFollowState(self) end,
 			}
 		end,
 		animation = function()
@@ -214,6 +216,12 @@ local entitiesData = {
 					['down'] = {frames = {1, 2, 3}, interval = 0.15, currentFrame = 1},
 					['left'] = {frames = {13, 14, 15}, interval = 0.15, currentFrame = 1},
 				},
+				['follow'] = {
+					['up'] = {frames = {37, 38, 39}, interval = 0.15, currentFrame = 1},
+					['right'] = {frames = {25, 26, 27}, interval = 0.15, currentFrame = 1},
+					['down'] = {frames = {1, 2, 3}, interval = 0.15, currentFrame = 1},
+					['left'] = {frames = {13, 14, 15}, interval = 0.15, currentFrame = 1},
+				},
 			}
 		end,
 		box = function(self)
@@ -223,8 +231,9 @@ local entitiesData = {
 			self.health = self.health - damage
 		end,
 		stateDecision = {
-			['idle'] = {'walk'},
+			['idle'] = {'follow'},
 			['walk'] = {'walk'},
+			['follow'] = {'follow'},
 		},
 	},
 }

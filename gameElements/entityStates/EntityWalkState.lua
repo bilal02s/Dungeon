@@ -111,3 +111,7 @@ end
 function EntityWalkState:draw()
 	love.graphics.draw(images[self.image], frames[self.quad][self.animation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
 end
+
+--[[42020097:14.6
+42020037:18.2
+41929764:12.8]]

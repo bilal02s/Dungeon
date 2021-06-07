@@ -1,4 +1,4 @@
-VisiblityGraph = Class{}
+VisibilityGraph = Class{}
 local atan = math.atan
 local pi = math.pi
 
@@ -101,7 +101,7 @@ end
 
 function VisibilityGraph:connectObjectVertices(vertices)
 	local angles = BinaryHeap()
-	local graph
+	local graph = {}
 
 	for vertex, connections in pairs(vertices) do
 		local sortedVertices = {}
@@ -165,7 +165,7 @@ function VisibilityGraph:connectObjectVertices(vertices)
 			end
 
 			for node1, node2 in pairs(obstacles) do
-				if self:lineIntersection({vertex, other}, {node1, node2})
+				if self:lineIntersection({vertex, other}, {node1, node2}) then
 					visible = false
 					break
 				end
@@ -201,7 +201,7 @@ end
 
 function VisibilityGraph:connectSimpleVertices(vertices, allSimpleVertices)
 	local angles = BinaryHeap()
-	local graph
+	local graph = {}
 
 	for k, vertex in pairs(vertices) do
 		local sortedVertices = {}
@@ -255,14 +255,8 @@ function VisibilityGraph:connectSimpleVertices(vertices, allSimpleVertices)
 				index = 1
 			end
 
-			if firstAngle < lastAngle and currentAngle > firstAngle and currentAngle < lastAngle then
-				goto continue
-			elseif firstAngle > lastAngle and (currentAngle > firstAngle or currentAngle < lastAngle) then
-				goto continue
-			end
-
 			for node1, node2 in pairs(obstacles) do
-				if self:lineIntersection({vertex, other}, {node1, node2})
+				if self:lineIntersection({vertex, other}, {node1, node2}) then
 					visible = false
 					break
 				end
@@ -271,9 +265,6 @@ function VisibilityGraph:connectSimpleVertices(vertices, allSimpleVertices)
 			if visible then
 				table.insert(graph[vertex], other)
 			end
-
-			connection1 = self.connectedVertices[other][1]
-			connection2 = self.connectedVertices[other][2]
 
 			if self.connectedVertices[other] then
 				connection1 = self.connectedVertices[other][1]
@@ -326,4 +317,21 @@ function VisibilityGraph:getGraph(point1, point2)
 	end
 
 	return graph
+end
+
+function VisibilityGraph:draw(graph)
+	for vertex, connection in pairs(self.connectedVertices) do
+		love.graphics.circle('fill', vertex[1], vertex[2], 2.5)
+		love.graphics.line(vertex[1], vertex[2], connection[1][1], connection[1][2])
+	end
+
+	for k, vertex in pairs(self.simpleVertices) do
+		love.graphics.circle('fill', vertex[1], vertex[2], 2.5)
+	end
+
+	for vertex, nodes in pairs(graph) do
+		for k, node in pairs(nodes) do
+			love.graphics.line(vertex[1], vertex[2], node[1], node[2])
+		end
+	end
 end

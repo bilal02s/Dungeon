@@ -12,11 +12,12 @@ function Entity:init(param, pos, player, currentRoom)
 	self.animation = param.animation
 	self.box = param.box
 	self.hurt = param.hurt
+	self.id = param.id
 	self.stateDecision = param.stateDecision
 	self.player = player
 	self.currentRoom = currentRoom
 
-	self:change('walk', {
+	self:change('idle', {
 		x = currentRoom.totalOffsetX + pos[1] * tileLength,
 		y = currentRoom.totalOffsetY + pos[2] * tileLength,
 		direction = 'down',
