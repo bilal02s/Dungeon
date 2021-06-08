@@ -25,8 +25,6 @@ function DungeonShiftState:open(param)
 end
 
 function DungeonShiftState:update(dt)
-	self.player.current.direction = self.direction
-	self.player.current.animation:change(self.direction)
 	self.player.current.animation:update(dt)
 end
 

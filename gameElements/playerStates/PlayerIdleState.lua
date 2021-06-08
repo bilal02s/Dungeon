@@ -14,6 +14,13 @@ function PlayerIdleState:init(player)
 
 	self.animation = AnimationState(player.animation()['idle'])
 	self.hurtBox = player.hurtBoxes['idle']
+
+	self.onCollide = {
+		['right'] = function(block) self.x = block.x - self.width end,
+		['left'] = function(block) self.x = block.x + block.width end,
+		['up'] = function(block) self.y = block.y + block.height - 20 end,
+		['down'] = function(block) self.y = block.y - self.height - 5 end,
+	}
 end
 
 function PlayerIdleState:open(param)
@@ -26,6 +33,8 @@ function PlayerIdleState:open(param)
 end
 
 function PlayerIdleState:update(dt)
+	self:checkCollision()
+
 	if love.keyboard.wasPressed('up') then
 		self.player:change('walk', {x = self.x, y = self.y, direction = 'up', currentRoom = self.currentRoom})
 	elseif love.keyboard.wasPressed('right') then
@@ -38,6 +47,26 @@ function PlayerIdleState:update(dt)
 
 	if love.keyboard.wasPressed('space') then
 		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
+	end
+end
+
+function PlayerIdleState:checkCollision()
+	for k, other in pairs(self.currentRoom.entities) do
+		local current = other.current
+		local box = self:hurtBox()
+		if AABB(box, current:box()) then
+			local result = collision(box, current:box())
+
+			if result == 'down' then
+				current.onCollide['up'](box)
+			elseif result == 'right' then
+				current.onCollide['left'](box)
+			elseif result == 'left' then
+				current.onCollide['right'](box)
+			elseif result == 'up' then
+				current.onCollide['down'](box)
+			end
+		end
 	end
 end
 

@@ -3,7 +3,7 @@ local atan = math.atan
 local pi = math.pi
 
 function getVectAngle(vect)
-	local angle = vect[2]/vect[1]
+	local angle = atan(vect[2]/vect[1])
 	if vect[1] >= 0 then
 		angle = angle < 0 and angle + 2*pi or angle
 		return angle

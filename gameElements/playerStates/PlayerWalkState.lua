@@ -33,6 +33,7 @@ function PlayerWalkState:open(param)
 	self.offsetX = currentRoom.initialX + currentRoom.offsetX
 	self.offsetY = currentRoom.initialY + currentRoom.offsetY
 	self.quadTree = currentRoom.quadTree
+	self.entities = currentRoom.entities
 end
 
 function PlayerWalkState:update(dt)
@@ -40,8 +41,6 @@ function PlayerWalkState:update(dt)
 		self.player:change('idle', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
 		return nil
 	end
-
-	self.up, self.down, self.left, self.right = checkCollision(self:hurtBox(), self.quadTree:query(self:hurtBox()), self.onCollide, self)
 
 	if love.keyboard.isDown('up') and not self.up then
 		self.y = self.y - self.speed*dt
@@ -63,6 +62,8 @@ function PlayerWalkState:update(dt)
 		self.direction = 'left'
 		self.animation:change('left')
 	end
+
+	self.up, self.down, self.left, self.right = checkPlayerCollision(self:hurtBox(), self.quadTree:query(self:hurtBox()), self.entities, self.onCollide, self)
 
 	if love.keyboard.wasPressed('space') then
 		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
@@ -93,33 +94,58 @@ function detectCollidedBlock(objects, i, j)
 	end
 end
 
-function AABB(entity1, entity2, p) -- p : precision
-	if entity1.x + entity1.width - p < entity2.x or entity1.x + p > entity2.x + entity2.width or
-		entity1.y + entity1.height - p < entity2.y or entity1.y + p > entity2.y + entity2.height then
+function AABB(entity1, entity2)
+	if entity1.x + entity1.width < entity2.x or entity1.x > entity2.x + entity2.width or
+		entity1.y + entity1.height < entity2.y or entity1.y > entity2.y + entity2.height then
 		return false
 	end
 
 	return true
 end
 
-function checkCollision(entity, objects, onCollide, self)
+function checkPlayerCollision(entity, objects, otherEntities, onCollide, self)
 	local down
 	local up
 	local left
 	local right
 
 	for k, block in pairs(objects) do
-		if AABB(entity, block.box, 0) then
-			local result = collision(entity, block.box, onCollide)
+		if AABB(entity, block.box) then
+			local result = collision(entity, block.box)
 			block:onCollide(self)
 
 			if result == 'down' then
+				onCollide['down'](block.box)
 				down = true
 			elseif result == 'right' then
+				onCollide['right'](block.box)
 				right = true
 			elseif result == 'left' then
+				onCollide['left'](block.box)
 				left = true
 			elseif result == 'up' then
+				onCollide['up'](block.box)
+				up = true
+			end
+		end
+	end
+
+	for k, other in pairs(otherEntities) do
+		local current = other.current
+		if AABB(entity, current:box()) then
+			local result = collision(entity, current:box())
+
+			if result == 'down' then
+				current.onCollide['up'](entity)
+				down = true
+			elseif result == 'right' then
+				current.onCollide['left'](entity)
+				right = true
+			elseif result == 'left' then
+				current.onCollide['right'](entity)
+				left = true
+			elseif result == 'up' then
+				current.onCollide['down'](entity)
 				up = true
 			end
 		end
@@ -128,7 +154,7 @@ function checkCollision(entity, objects, onCollide, self)
 	return up, down, left, right
 end
 
-function collision(entity1, entity2, onCollide)
+function collision(entity1, entity2)
 	local w = (entity1.width + entity2.width) * 0.5
 	local h = (entity1.height + entity2.height) * 0.5
 	local deltaX = (entity2.x + entity2.width/2) - (entity1.x + entity1.width/2)
@@ -138,18 +164,14 @@ function collision(entity1, entity2, onCollide)
 
 	if dx > dy then
 		if deltaY > 0 then
-			onCollide['down'](entity2)
 			return 'down'
 		else
-			onCollide['up'](entity2)
 			return 'up'
 		end
 	elseif dx < dy then
 		if deltaX > 0 then
-			onCollide['right'](entity2)
 			return 'right'
 		else
-			onCollide['left'](entity2)
 			return 'left'
 		end
 	end

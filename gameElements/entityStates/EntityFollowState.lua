@@ -32,8 +32,8 @@ function EntityFollowState:init(originalEntity)
 		['down'] = function(block) self.y = block.y - self.height end,
 	}
 
-	if visibilityGraph[self.id] then
-		self.visibilityGraph = visibilityGraph[self.id]
+	if self.currentRoom.visibilityGraph[self.id] then
+		self.visibilityGraph = self.currentRoom.visibilityGraph[self.id]
 	else
 		self.visibilityGraph = VisibilityGraph()
 		self.visibilityGraph:setEntityDimentions(self.width, self.height)
@@ -41,7 +41,7 @@ function EntityFollowState:init(originalEntity)
 			self.visibilityGraph:insertObject(object)
 		end
 		self.visibilityGraph:createGraph()
-		visibilityGraph[self.id] = self.visibilityGraph
+		self.currentRoom.visibilityGraph[self.id] = self.visibilityGraph
 	end
 	self.path = {}
 end
@@ -56,42 +56,44 @@ function EntityFollowState:update(dt)
 	local src = {self.x, self.y}
 	local dest = {self.player.current.x, self.player.current.y}
 	local adjacencyList = self.visibilityGraph:getGraph(src, dest)
-	self.path = findPath(adjacencyList, src, dest); self.graph = adjacencyList
+	self.path = findPath(adjacencyList, src, dest)
 
-	if #self.path > 1 then
-		local node1 = self.path[1]
-		local node2 = self.path[2]
-		local angle = getVectAngle({node2[1] - node1[1], node2[2] - node1[2]})
-		self.vx = self.speed * cos(angle)
-		self.vy = self.speed * sin(angle)
+	if #self.path <= 1 then
+		return nil
+	end
 
-		self.x = self.x + self.vx*dt
-		self.y = self.y + self.vy*dt
+	local node1 = self.path[1]
+	local node2 = self.path[2]
+	local angle = getVectAngle({node2[1] - node1[1], node2[2] - node1[2]})
+	self.vx = self.speed * cos(angle)
+	self.vy = self.speed * sin(angle)
 
-		if abs(self.vx) > 2*abs(self.vy) then
-			if self.vx > 0 then
-				self.direction = 'right'
-				self.animation:change('right')
-			else
-				self.direction = 'left'
-				self.animation:change('left')
-			end
+	self.x = self.x + self.vx*dt
+	self.y = self.y + self.vy*dt
+
+	if abs(self.vx) > abs(self.vy) then
+		if self.vx > 0 then
+			self.direction = 'right'
+			self.animation:change('right')
 		else
-			if self.vy > 0 then
-				self.direction = 'down'
-				self.animation:change('down')
-			else
-				self.direction = 'up'
-				self.animation:change('up')
-			end
+			self.direction = 'left'
+			self.animation:change('left')
+		end
+	else
+		if self.vy > 0 then
+			self.direction = 'down'
+			self.animation:change('down')
+		else
+			self.direction = 'up'
+			self.animation:change('up')
 		end
 	end
+
+	self.up, self.down, self.left, self.right = checkEntityCollision(self, self.quadTree:query(self:box()), self.currentRoom.entities, self.onCollide)
 
 	self.animation:update(dt)
 end
 
 function EntityFollowState:draw()
 	love.graphics.draw(images[self.image], frames[self.quad][self.animation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
-	if self.graph then self.visibilityGraph:draw(self.graph)
-	end
 end

@@ -91,8 +91,6 @@ function EntityWalkState:update(dt)
 		return nil
 	end
 
-	self.up, self.down, self.left, self.right = checkCollision(self:box(), self.quadTree:query(self:box()), self.onCollide, self)
-
 	if self.up or self.down then
 		self.vy = -self.vy
 		self:resetDirection()
@@ -105,13 +103,62 @@ function EntityWalkState:update(dt)
 	self.x = self.x + self.vx*dt
 	self.y = self.y + self.vy*dt
 
+	self.up, self.down, self.left, self.right = checkEntityCollision(self, self.quadTree:query(self:box()), self.currentRoom.entities, self.onCollide)
+
 	self.animation:update(dt)
+end
+
+function checkEntityCollision(entity, objects, otherEntities, onCollide)
+	local entityBox = entity:box()
+	local down
+	local up
+	local left
+	local right
+
+	for k, block in pairs(objects) do
+		if AABB(entityBox, block.box) then
+			local result = collision(entityBox, block.box)
+
+			if result == 'down' then
+				onCollide['down'](block.box)
+				down = true
+			elseif result == 'right' then
+				onCollide['right'](block.box)
+				right = true
+			elseif result == 'left' then
+				onCollide['left'](block.box)
+				left = true
+			elseif result == 'up' then
+				onCollide['up'](block.box)
+				up = true
+			end
+		end
+	end
+
+	for k, other in pairs(otherEntities) do
+		local current = other.current
+		if entity ~= current and AABB(entityBox, current:box()) then
+			local result = collision(entityBox, current:box())
+
+			if result == 'down' then
+				onCollide['down'](current:box())
+				down = true
+			elseif result == 'right' then
+				onCollide['right'](current:box())
+				right = true
+			elseif result == 'left' then
+				onCollide['left'](current:box())
+				left = true
+			elseif result == 'up' then
+				onCollide['up'](current:box())
+				up = true
+			end
+		end
+	end
+
+	return up, down, left, right
 end
 
 function EntityWalkState:draw()
 	love.graphics.draw(images[self.image], frames[self.quad][self.animation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
 end
-
---[[42020097:14.6
-42020037:18.2
-41929764:12.8]]

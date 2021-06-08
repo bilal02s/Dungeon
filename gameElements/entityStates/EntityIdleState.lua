@@ -13,7 +13,14 @@ function EntityIdleState:init(originalEntity)
 	self.animation = AnimationState(originalEntity.animation()['idle'])
 	self.currentRoom = self.currentRoom
 
-	self.duration = math.random(1, 3)
+	self.onCollide = {
+		['right'] = function(block) self.x = block.x - self.width end,
+		['left'] = function(block) self.x = block.x + block.width end,
+		['up'] = function(block) self.y = block.y + block.height - self.height/2 end,
+		['down'] = function(block) self.y = block.y - self.height end,
+	}
+
+	self.duration = math.random() + math.random()
 	self.timer = 0
 end
 

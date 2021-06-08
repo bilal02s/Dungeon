@@ -13,6 +13,7 @@ function Room:init(structure, objects, entities, offset, player)
 	local boundaries = {x = self.totalOffsetX, y = self.totalOffsetY, width = self.col*tileLength, height = self.row*tileLength}
 	self.quadTree = QuadTree(boundaries, 4)
 
+	self.visibilityGraph = {}
 	self.objects = {}
 	self.structure, self.entities = makeRoom(structure, entities, player, self)
 	self.objects = objects
