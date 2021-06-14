@@ -8,44 +8,62 @@ function createMap(k)
 				{false, true, false, true, false},
 				{true, true, true, true, true},
 			}]]
-			{{false, true, true,},
-			 {true, true, true},
-			 {false, true, false}},
+			{{true, true, false, false},
+			 {false, true, true, true},
+			 {true, true, false, false}},
 			rooms = {
-				[1] = {row = 12, col = 12,
-					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}},
-						{{3, 3, id = 9}, {6, 3, id = 10}, {6, 6, id = 11}, {3, 6, id = 12}, {3, 3, id = 9}}
+				[1] = {row = 10, col = 16,
+					corners = {{{1, 1, id = 5}, {16, 1, id = 6}, {16, 10, id = 7}, {1, 10, id = 8}, {1, 1, id = 5}},
+						--{{3, 3, id = 9}, {6, 3, id = 10}, {6, 6, id = 11}, {3, 6, id = 12}, {3, 3, id = 9}}
 					},
-					doors = {[3] = {12, 6}, [4] = {6, 12}},
+					doors = {[3] = {16, 5}},
 					entities = {},
+					objects = {},
 				},
-				[2] = {row = 12, col = 12,
-					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
-					doors = {[1] = {1, 6}, [4] = {6, 12}},
-					entities = {},
-				},
-				[3] = {row = 12, col = 15,
-					corners = {{{1, 1, id = 5}, {15, 1, id = 6}, {15, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
-					doors = {[3] = {15, 6}},
-					entities = {},
-				},
-				[4] = {row = 12, col = 12,
-					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
-					doors = {[1] = {1, 6}, [2] = {6, 1}, [3] = {12, 6}, [4] = {6, 12}},
-					entities = {},
-				},
-				[5] = {row = 12, col = 12,
-					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
-					doors = {[1] = {1, 6}, [2] = {6, 1}},
+				[2] = {row = 10, col = 16,
+					corners = {{{1, 1, id = 5}, {16, 1, id = 6}, {16, 10, id = 7}, {1, 10, id = 8}, {1, 1, id = 5}}},
+					doors = {[1] = {1, 5}, [4] = {8, 10}},
 					entities = {
-						[1] = {{10,1}, {10,2}, {10,3}, {10,4}, {10,5}, {10,6}, {10,7}, {10,8}, {10,9}, {10, 10}},
+						[1] = {{14, 5}}
+					},
+					objects = {
+						[1] = {{3, 3}, {6, 3}, {8, 3}, {5, 8}}
 					},
 				},
-				[6] = {row = 12, col = 12,
-					corners = {{{1, 1, id = 5}, {12, 1, id = 6}, {12, 12, id = 7}, {1, 12, id = 8}, {1, 1, id = 5}}},
-					doors = {[2] = {6, 1}},
+				[3] = {row = 10, col = 16,
+					corners = {{{1, 1, id = 5}, {16, 1, id = 6}, {16, 10, id = 7}, {1, 10, id = 8}, {1, 1, id = 5}}},
+					doors = {[2] = {8, 1}, [3] = {16, 5}, [4] = {8, 10}},
 					entities = {},
+					objects = {[1] = {{3, 3}, {5, 3}, {11, 3}, {13, 3}, {3, 8}, {5, 8}, {11, 8}, {13, 8}, {4, 5}, {6, 5}, {8, 5}, {10, 5}, {12, 5}, {4, 6}, {6, 6}, {8, 6}, {10, 6}, {12, 6}}},
 				},
+				[4] = {row = 10, col = 16,
+					corners = {{{1, 1, id = 5}, {16, 1, id = 6}, {16, 10, id = 7}, {1, 10, id = 8}, {1, 1, id = 5}}},
+					doors = {[1] = {1, 5}, [3] = {16, 5}},
+					entities = {},
+					objects = {},
+				},
+				[5] = {row = 10, col = 16,
+					corners = {{{1, 1, id = 5}, {16, 1, id = 6}, {16, 10, id = 7}, {1, 10, id = 8}, {1, 1, id = 5}}},
+					doors = {[1] = {1, 5}},
+					entities = {
+						[1] = {{9,3},}-- {10,2}, {10,3}, {10,4}, {11,5}, {11,6}, {10,7}, {10,8}, {10,9}, {11, 9}},
+					},
+					objects = {
+						[1] = {{3, 3}, {5, 3}, {11, 3}, {13, 3}, {3, 8}, {5, 8}, {11, 8}, {13, 8}, {4, 5}, {6, 5}, {8, 5}, {10, 5}, {12, 5}, {4, 6}, {6, 6}, {8, 6}, {10, 6}, {12, 6}}
+					},
+				},
+				[6] = {row = 10, col = 16,
+					corners = {{{1, 1, id = 5}, {16, 1, id = 6}, {16, 10, id = 7}, {1, 10, id = 8}, {1, 1, id = 5}}},
+					doors = {[3] = {16, 5}},
+					entities = {},
+					objects = {},
+				},
+				[7] = {row = 10, col = 16,
+					corners = {{{1, 1, id = 5}, {16, 1, id = 6}, {16, 10, id = 7}, {1, 10, id = 8}, {1, 1, id = 5}}},
+					doors = {[1] = {1, 5}, [2] = {8, 1}},
+					entities = {},
+					objects = {},
+				}
 			}
 		}
 	}
@@ -74,10 +92,12 @@ function createLevel(param)
 	local roomCounter = 1
 	local struct = {}
 	local entities = {}
+	local objects = {}
 
 	for k, v in ipairs(layout) do
 		table.insert(struct, {})
 		table.insert(entities, {})
+		table.insert(objects, {})
 
 		for k2, v2 in ipairs(v) do
 			local array = {}
@@ -137,7 +157,9 @@ function createLevel(param)
 					elseif k3 == 2 or k3 == 4 then array[v3[2]][v3[1]+1] = 17 end
 				end
 
+				array.doors = currentRoom.doors
 				entities[k][k2] = currentRoom.entities
+				objects[k][k2] = currentRoom.objects
 
 				roomCounter = roomCounter + 1
 			end
@@ -146,5 +168,5 @@ function createLevel(param)
 		end
 	end
 	--for k, v in ipairs(struct[1][1]) do for k2, v2 in pairs(v) do io.write(v2) end print() end
-	return struct, entities
+	return struct, entities, objects
 end

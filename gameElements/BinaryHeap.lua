@@ -18,8 +18,8 @@ function BinaryHeap:init(s)
 	end
 end
 
-function BinaryHeap:insert(value)
-	self:insertElement(value)
+function BinaryHeap:insert(value, field)
+	self:insertElement(value, field)
 end
 
 function BinaryHeap:isNotEmpty()
@@ -48,7 +48,7 @@ function BinaryHeap:correctHeapField(i, field)
 
 	if i ~= 1 and self.arr[i][field] < self.arr[parentI][field] then
 		self.arr[parentI], self.arr[i] = self.arr[i], self.arr[parentI]
-		self:correctHeapValue(parentI, field)
+		self:correctHeapField(parentI, field)
 	end
 end
 

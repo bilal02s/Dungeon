@@ -51,6 +51,10 @@ function findPath(grid, src, dest)
 	src.parent = src
 	nodes[src.vertex] = src
 
+	if src:isEqual(dest) then
+		return {}
+	end
+
 	open:insert(src, 'f')
 
 	while open:isNotEmpty() do

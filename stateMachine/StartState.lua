@@ -32,13 +32,14 @@ function StartState:update(dt)
 	if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
 		local struct
 		local entities
-		struct, entities = createMap(1)
+		local objects
+		struct, entities, objects = createMap(1)
 		stateMachine:change('play', {
 			struct = struct, --{{struct1, struct2}},
-			objects = {{{}, {}, {}},{{}, {}, {}},{{}, {}, {}}},
+			objects = objects,
 			entities = entities,
 			initX = 2,
-			initY = 2,
+			initY = 1,
 		})
 	end
 end
@@ -51,8 +52,9 @@ function StartState:draw()
 	love.graphics.setFont(fonts['zeldaM'])
 	love.graphics.printf('Press ENTER to play', 0 , Height*2/3, Width, 'center')
 	--[[local count = 0
-	for i = 1, 16 do
-		love.graphics.draw(images['swingSword'], frames['swingSword'][i], 10 + (count * 45), 50, 0, 1, 1)
+	for i = 1, 10 do
+		love.graphics.draw(images['isaac'], frames['isaac'][i], 10 + (count * 60), 50, 0, 1.5, 1.5)
+		love.graphics.rectangle('line', 10 + (count * 60), 50, 18.9*1.5, 15*1.5)
 		count = count + 1
 	end]]
 end

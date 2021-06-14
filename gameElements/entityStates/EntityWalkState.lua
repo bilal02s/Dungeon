@@ -9,6 +9,7 @@ function EntityWalkState:init(originalEntity)
 	self.quad = originalEntity.quad
 	self.box = originalEntity.box
 	self.hurt = originalEntity.hurt
+	self.damage = originalEntity.damage
 	self.speed = originalEntity.speed
 	self.stateDecision = originalEntity.stateDecision['walk']
 	self.animation = AnimationState(originalEntity.animation()['walk'])
@@ -20,7 +21,7 @@ function EntityWalkState:init(originalEntity)
 	self.timer = 0
 
 	self.onCollide = {
-		['right'] = function(block) self.x = block.x - self.width end,
+		['right'] = function(block) self.x = block.x - 3*self.width/4 end,
 		['left'] = function(block) self.x = block.x + block.width end,
 		['up'] = function(block) self.y = block.y + block.height - self.height/2 end,
 		['down'] = function(block) self.y = block.y - self.height end,

@@ -13,11 +13,10 @@ function Room:init(structure, objects, entities, offset, player)
 	local boundaries = {x = self.totalOffsetX, y = self.totalOffsetY, width = self.col*tileLength, height = self.row*tileLength}
 	self.quadTree = QuadTree(boundaries, 4)
 
+	self.balls = {}
 	self.visibilityGraph = {}
-	self.objects = {}
-	self.structure, self.entities = makeRoom(structure, entities, player, self)
-	self.objects = objects
-	--self.entities = createEntities(entities, self.totalOffsetX, self.totalOffsetY)
+	self.structure, self.entities, self.objects = createRoom(structure, entities, objects, player, self)
+	self.doors = structure.doors
 
 	for k, row in pairs(self.structure) do
 		for k2, object in pairs(row) do
@@ -27,8 +26,8 @@ function Room:init(structure, objects, entities, offset, player)
 		end
 	end
 
-	for k, entity in pairs(self.entities) do
-		--self.quadTree:insert(entity)
+	for k, object in pairs(self.objects) do
+		self.quadTree:insert(object)
 	end
 end
 
@@ -42,6 +41,14 @@ function Room:update(dt)
 	for k, entity in pairs(self.entities) do
 		entity:update(dt)
 	end
+
+	for k, ball in pairs(self.balls) do
+		ball:update(dt)
+
+		if not ball.inPlay then
+			self.balls[k] = nil
+		end
+	end
 end
 
 function Room:draw()
@@ -51,8 +58,30 @@ function Room:draw()
 		end
 	end
 
+	for k, object in pairs(self.objects) do
+		object:draw()
+	end
+
 	for k, entity in pairs(self.entities) do
 		entity:draw()
+	end
+
+	for k, ball in pairs(self.balls) do
+		ball:draw()
+	end
+
+	local fullHeart = math.floor(self.player.current.health/10)
+	local halfHeart = self.player.current.health % 10
+	local heartX = self.offsetX + 50
+	local heartY = self.offsetY + 10
+
+	for i = 1, fullHeart do
+		love.graphics.draw(images['heart'], frames['heart'][5], heartX, heartY, 0, 1.5, 1.5)
+		heartX = heartX + 40
+	end
+
+	if halfHeart == 5 then
+		love.graphics.draw(images['heart'], frames['heart'][3], heartX, heartY, 0, 1.5, 1.5)
 	end
 end
 
@@ -118,7 +147,7 @@ function wall(k)
 		initialise = function(self) end,
 		onCollide = function() end,
 	},
-	[13] = {scale = 2.5, width = 24, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', xOffset = -20, --LEFT
+	[13] = {scale = 2.5, width = 24, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'open', xOffset = -20, --LEFT
 		animation = function()
 			return {
 				['close'] = {frames = {5}, interval = 10, currentFrame = 1},
@@ -136,7 +165,7 @@ function wall(k)
 			end
 		end,
 	},
-	[14] = {scale = 2.5, width = 32, height = 24, image = 'tiles', quad = 'doors', collidable = true, state = 'close', yOffset = -20, -- UP
+	[14] = {scale = 2.5, width = 32, height = 24, image = 'tiles', quad = 'doors', collidable = true, state = 'open', yOffset = -20, -- UP
 		animation = function()
 			return {
 				['close'] = {frames = {2}, interval = 10, currentFrame = 1},
@@ -154,7 +183,7 @@ function wall(k)
 			end
 		end,
 	},
-	[15] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', --RIGHT
+	[15] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'open', --RIGHT
 		animation = function()
 			return {
 				['close'] = {frames = {8}, interval = 10, currentFrame = 1},
@@ -172,7 +201,7 @@ function wall(k)
 			end
 		end,
 	},
-	[16] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'close', --DOWN
+	[16] = {scale = 2.5, width = 32, height = 32, image = 'tiles', quad = 'doors', collidable = true, state = 'open', --DOWN
 		animation = function()
 			return {
 				['close'] = {frames = {11}, interval = 10, currentFrame = 1},
@@ -195,7 +224,7 @@ end
 
 local entitiesData = {
 	[1] = {
-		width = 16, height = 16, scale = 2.5, health = 5, speed = 100, image = 'entities', quad = 'entities', id = 1,
+		width = 16, height = 16, scale = 2.5, health = 15, speed = 100, image = 'entities', quad = 'entities', id = 1, damage = 5,
 		states = function(self)
 			return {
 				['idle'] = function() return EntityIdleState(self) end,
@@ -226,7 +255,7 @@ local entitiesData = {
 			}
 		end,
 		box = function(self)
-			return Box(self.x, self.y + self.height/2, self.width, self.height/2)
+			return Box(self.x + self.width/4, self.y + self.height/2, self.width/2, self.height/2)
 		end,
 		hurt = function(self, damage)
 			self.health = self.health - damage
@@ -238,14 +267,31 @@ local entitiesData = {
 		},
 	},
 }
+local objectsData = {
+	[1] = {scale = 1, width = 40, height = 40, image = 'tiles', quad = 'tiles', state = 'static', collidable = true, -- BARREL
+		animation = function()
+			return {
+				['static'] = {frames = {getRandom({109, 110, 111, 128})}, interval = 10, currentFrame = 1},
+			}
+		end,
+		box = function(self)
+			return Box(self.x, self.y, self.width, self.height)
+		end,
+		initialise = function(self) end,
+		onCollide = function() end,
+	},
+}
 
-function makeRoom(structure, entities, player, Room)
+
+
+function createRoom(structure, entities, objects, player, Room)
 	local n = #structure
 	local m = #structure[1]
 	local initX = Room.totalOffsetX
 	local initY = Room.totalOffsetY
 	local room = {}
 	local Entities = {}
+	local Objects = {}
 	local counter = 1
 
 	for i = 1, n do
@@ -254,19 +300,25 @@ function makeRoom(structure, entities, player, Room)
 
 		for k, v in ipairs(structure[i]) do
 			if v~=17 then
-				room[i][counter] = GameObject({(k-1)*40 + initX, (i-1)*40 + initY}, wall(v))
+				local coordinate = {(k-1)*tileLength + initX, (i-1)*tileLength + initY}
+				room[i][counter] = GameObject(coordinate, wall(v))
 			end
 			counter = counter + 1
 		end
 	end
 
-	if entities then
-		for key, entity in pairs(entities) do
-			for k2, pos in pairs(entity) do
-				table.insert(Entities, Entity(entitiesData[key], pos, player, Room))
-			end
+	for key, entity in pairs(entities) do
+		for k2, pos in pairs(entity) do
+			table.insert(Entities, Entity(entitiesData[key], pos, player, Room))
 		end
 	end
 
-	return room, Entities
+	for key, object in pairs(objects) do
+		for k2, pos in pairs(object) do
+			local coordinate = {(pos[1] - 1)*tileLength + initX, (pos[2] - 1)*tileLength + initY}
+			table.insert(Objects, GameObject(coordinate, objectsData[key]))
+		end
+	end
+
+	return room, Entities, Objects
 end

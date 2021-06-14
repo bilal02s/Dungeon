@@ -15,6 +15,7 @@ function EntityFollowState:init(originalEntity)
 	self.box = originalEntity.box
 	self.hurt = originalEntity.hurt
 	self.speed = originalEntity.speed
+	self.damage = originalEntity.damage
 	self.stateDecision = originalEntity.stateDecision['follow']
 	self.animation = AnimationState(originalEntity.animation()['follow'])
 	self.currentRoom = originalEntity.currentRoom
@@ -26,23 +27,12 @@ function EntityFollowState:init(originalEntity)
 	self.timer = 0
 
 	self.onCollide = {
-		['right'] = function(block) self.x = block.x - self.width end,
-		['left'] = function(block) self.x = block.x + block.width end,
+		['right'] = function(block) self.x = block.x - 3*self.width/4 end,
+		['left'] = function(block) self.x = block.x + block.width - self.width/4 end,
 		['up'] = function(block) self.y = block.y + block.height - self.height/2 end,
 		['down'] = function(block) self.y = block.y - self.height end,
 	}
 
-	if self.currentRoom.visibilityGraph[self.id] then
-		self.visibilityGraph = self.currentRoom.visibilityGraph[self.id]
-	else
-		self.visibilityGraph = VisibilityGraph()
-		self.visibilityGraph:setEntityDimentions(self.width, self.height)
-		for k, object in pairs(self.currentRoom.objects) do
-			self.visibilityGraph:insertObject(object)
-		end
-		self.visibilityGraph:createGraph()
-		self.currentRoom.visibilityGraph[self.id] = self.visibilityGraph
-	end
 	self.path = {}
 end
 
@@ -50,12 +40,28 @@ function EntityFollowState:open(param)
 	self.x = param.x
 	self.y = param.y
 	self.animation:change(param.direction)
+
+	if self.currentRoom.visibilityGraph[self.id] then
+		self.visibilityGraph = self.currentRoom.visibilityGraph[self.id]
+	else
+		local box = self:box()
+		self.visibilityGraph = VisibilityGraph()
+		self.visibilityGraph:setEntityDimentions(box.width, box.height)
+
+		for k, object in pairs(self.currentRoom.objects) do
+			self.visibilityGraph:insertObject(object)
+		end
+
+		self.visibilityGraph:createGraph()
+		self.currentRoom.visibilityGraph[self.id] = self.visibilityGraph
+	end
 end
 
 function EntityFollowState:update(dt)
-	local src = {self.x, self.y}
+if love.keyboard.isDown('p') then goto iAmBored end
+	local src = {self.x + self.width/4, self.y + self.width/2}
 	local dest = {self.player.current.x, self.player.current.y}
-	local adjacencyList = self.visibilityGraph:getGraph(src, dest)
+	local adjacencyList = self.visibilityGraph:getGraph(src, dest); self.graph = adjacencyList
 	self.path = findPath(adjacencyList, src, dest)
 
 	if #self.path <= 1 then
@@ -92,8 +98,47 @@ function EntityFollowState:update(dt)
 	self.up, self.down, self.left, self.right = checkEntityCollision(self, self.quadTree:query(self:box()), self.currentRoom.entities, self.onCollide)
 
 	self.animation:update(dt)
+
+	::iAmBored::
+end
+
+function printTable(t, i, j)
+	local x = i
+	local y = j
+
+	for k1, stuff1 in pairs(t) do
+		if type(stuff1) == 'table' then
+			x = i
+			y = y + 20
+			love.graphics.print(tostring(tuple(k1))..':', x, y)
+			x = x + 80
+			printTable(stuff1, x, y)
+			if type(stuff1[1]) == 'table' then
+				y = y + 20*#stuff1
+			end
+		else
+			love.graphics.print(tostring(k1)..':'..tostring(stuff1), x, y)
+			x = x + 200
+		end
+	end
+end
+
+function tuple(vect)
+	if type(vect) ~= 'table' then return vect end
+	return tostring(vect[1])..', '..tostring(vect[2])
 end
 
 function EntityFollowState:draw()
 	love.graphics.draw(images[self.image], frames[self.quad][self.animation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
+
+	--[[if self.graph then for vertex, nodes in pairs(self.graph) do
+		love.graphics.setFont(fonts['zeldaS'])
+		--printTable(self.graph, self.currentRoom.totalOffsetX, self.currentRoom.totalOffsetY - 80)
+		for k, node in pairs(nodes) do
+			love.graphics.line(vertex[1], vertex[2], node[1], node[2])
+		end
+	end end]]
+
+	local box = self:box()
+	love.graphics.rectangle('line', box.x, box.y, box.width, box.height)
 end

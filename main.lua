@@ -1,5 +1,5 @@
-Width = 1000
-Height = 680
+Width = 800
+Height = 560
 tileLength = 40
 
 require 'gameElements/Resources'
@@ -27,6 +27,10 @@ function love.keypressed(key)
 	if key == 'escape' then
 		love.event.quit()
 	end
+end
+
+function love.keyreleased(key)
+	--love.keyboard.keyPressed[key] = nil
 end
 
 function love.keyboard.wasPressed(key)

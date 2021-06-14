@@ -10,32 +10,55 @@ function PlayState:init()
 		['walk'] = function() return PlayerWalkState(self.player, self) end,
 		['swingSword'] = function() return PlayerSwingSword(self.player, self) end,
 	})
-	self.player.scale = 2.5
-	self.player.height = 40
-	self.player.width = 40
+	self.player.scale = 1.5
+	self.player.width = 28.35
+	self.player.height = 22.5
+	self.player.health = 30
 	self.player.images = {
-		['idle'] = 'walk',
-		['walk'] = 'walk',
+		['idle'] = 'isaac',
+		['walk'] = 'isaac',
 		['swingSword'] = 'swingSword',
 	}
 	self.player.frames = {
-		['idle'] = 'walk',
-		['walk'] = 'walk',
+		['idle'] = 'isaac',
+		['walk'] = 'isaac',
 		['swingSword'] = 'swingSword',
 	}
-	self.player.animation = function()
+	self.player.bodyAnimation = function()
 		return {
 			['walk'] = {
-				['up'] = {frames = {10, 11, 12, 9}, interval = 0.1, currentFrame = 1},
-				['down'] = {frames = {2, 3, 4, 1}, interval = 0.1, currentFrame = 1},
-				['left'] = {frames = {14, 15, 16, 13}, interval = 0.1, currentFrame = 1},
-				['right'] = {frames = {6, 7, 8, 5}, interval = 0.1, currentFrame = 1},
+				['up'] = {frames = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, interval = 0.075, currentFrame = 1},
+				['down'] = {frames = {2, 3, 4, 5, 6, 7, 8, 9, 10, 1}, interval = 0.075, currentFrame = 1},
+				['left'] = {frames = {30, 29, 28, 27, 26, 25, 24, 23, 22, 21}, interval = 0.075, currentFrame = 1},
+				['right'] = {frames = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20}, interval = 0.075, currentFrame = 1},
 			},
 			['idle'] = {
-				['up'] = {frames = {9}, interval = 10, currentFrame = 1},
+				['up'] = {frames = {1}, interval = 10, currentFrame = 1},
 				['down'] = {frames = {1}, interval = 10, currentFrame = 1},
-				['left'] = {frames = {13}, interval = 10, currentFrame = 1},
-				['right'] = {frames = {5}, interval = 10, currentFrame = 1},
+				['left'] = {frames = {1}, interval = 10, currentFrame = 1},
+				['right'] = {frames = {1}, interval = 10, currentFrame = 1},
+			},
+			['swingSword'] = {
+				['up'] = {frames = {5, 6, 7, 8}, interval = 0.05, currentFrame = 1},
+				['down'] = {frames = {1, 2, 3, 4}, interval = 0.05, currentFrame = 1},
+				['left'] = {frames = {13, 14, 15, 16}, interval = 0.05, currentFrame = 1},
+				['right'] = {frames = {9, 10, 11, 12}, interval = 0.05, currentFrame = 1},
+			},
+		}
+	end
+	self.player.headAnimation = function()
+		return {
+			['walk'] = {
+				['up'] = {frames = {35}, interval = 0.1, currentFrame = 1},
+				['down'] = {frames = {31}, interval = 0.1, currentFrame = 1},
+				['left'] = {frames = {37}, interval = 0.1, currentFrame = 1},
+				['right'] = {frames = {33}, interval = 0.1, currentFrame = 1},
+			},
+			['idle'] = {
+				['up'] = {frames = {35}, interval = 10, currentFrame = 1},
+				['down'] = {frames = {31}, interval = 10, currentFrame = 1},
+				['left'] = {frames = {37}, interval = 10, currentFrame = 1},
+				['right'] = {frames = {33}, interval = 10, currentFrame = 1},
 			},
 			['swingSword'] = {
 				['up'] = {frames = {5, 6, 7, 8}, interval = 0.05, currentFrame = 1},
@@ -46,13 +69,16 @@ function PlayState:init()
 		}
 	end
 	self.player.hurtBoxes = {
-		['walk'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 15} end,
-		['idle'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 15} end,
+		['walk'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
+		['idle'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
 		['swingSword'] = function(this) return {x = this.x, y = this.y + 20, width = this.width, height = this.height - 10} end,
 	}
 	self.player.hitBoxes = {
 		['swingSword'] = function(this) return {x = this.x, y = this.y, width = this.width, height = this.height} end,
 	}
+	self.player.hurt = function(this, damage)
+		this.health = this.health - damage
+	end
 	function self.player:changeRoom(nextRoom)
 		self.current.quadTree = nextRoom.quadTree
 		self.current.currentRoom = nextRoom

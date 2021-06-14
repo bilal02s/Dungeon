@@ -9,6 +9,7 @@ function Entity:init(param, pos, player, currentRoom)
 	self.quad = param.quad
 	self.speed = param.speed
 	self.health = param.health
+	self.damage = param.damage
 	self.animation = param.animation
 	self.box = param.box
 	self.hurt = param.hurt
@@ -18,8 +19,8 @@ function Entity:init(param, pos, player, currentRoom)
 	self.currentRoom = currentRoom
 
 	self:change('idle', {
-		x = currentRoom.totalOffsetX + pos[1] * tileLength,
-		y = currentRoom.totalOffsetY + pos[2] * tileLength,
+		x = currentRoom.totalOffsetX + (pos[1] - 1)*tileLength,
+		y = currentRoom.totalOffsetY + (pos[2] - 1)*tileLength,
 		direction = 'down',
 	})
 end

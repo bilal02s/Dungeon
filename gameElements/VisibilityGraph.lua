@@ -61,7 +61,7 @@ function VisibilityGraph:insertPoint(point)
 end
 
 function VisibilityGraph:horizontalIntersection(segment, x, y)
-	if (segment[1][2] >= y and segment[1][2] >= y) or (segment[1][2] < y and segment[2][2] < y) or (segment[1][1] <= x and segment[2][1] <= x) then
+	if (segment[1][2] >= y and segment[2][2] >= y) or (segment[1][2] < y and segment[2][2] < y) or (segment[1][1] <= x and segment[2][1] <= x) then
 		return false
 	elseif segment[1][1] > x and segment[2][1] > x then
 		return true
@@ -74,29 +74,38 @@ function VisibilityGraph:horizontalIntersection(segment, x, y)
 	return result
 end
 
-function VisibilityGraph:getIntersection(segment1, segment2)
+function VisibilityGraph:lineIntersection(segment1, segment2)
 	local a = segment1[2][2] - segment1[1][2]
 	local b = segment1[1][1] - segment1[2][1]
 	local c = segment1[2][1]*segment1[1][2] - segment1[1][1]*segment1[2][2]
 	local j = segment2[2][2] - segment2[1][2]
 	local k = segment2[1][1] - segment2[2][1]
 	local l = segment2[2][1]*segment2[1][2] - segment2[1][1]*segment2[2][2]
+	local e = 0.000001
 
 	local x = (c*k - b*l)/(b*j - a*k)
 	local y = (a*l - c*j)/(b*j - a*k)
 
-	if ((x == segment1[1][1] and y == segment1[1][2]) or (x == segment1[2][1] and y == segment1[2][2])) and
-		((x == segment2[1][1] and y == segment2[1][2]) or (x == segment2[2][1] and y == segment2[2][2])) then
-		return false
+	local result1X = (x - e > segment1[1][1] and x + e < segment1[2][1]) or (x + e < segment1[1][1] and x - e > segment1[2][1])
+	local result1Y = (y - e > segment1[1][2] and y + e < segment1[2][2]) or (y + e < segment1[1][2] and y - e > segment1[2][2])
+
+	local result2X = (x >= segment2[1][1] and x <= segment2[2][1]) or (x <= segment2[1][1] and x >= segment2[2][1])
+	local result2Y = (y >= segment2[1][2] and y <= segment2[2][2]) or (y <= segment2[1][2] and y >= segment2[2][2])
+
+	if segment1[1][1] == segment1[2][1] then
+		result1X = true
+	end
+	if segment1[1][2] == segment1[2][2] then
+		result1Y = true
+	end
+	if segment2[1][1] == segment2[2][1] then
+		result2X = true
+	end
+	if segment2[1][2] == segment2[2][2] then
+		result2Y = true
 	end
 
-	local result1 = ((x >= segment1[1][1] and x <= segment1[2][1]) or (x <= segment1[1][1] and x >= segment1[2][1])) and
-		((y >= segment1[1][2] and y <= segment1[2][2]) or (y <= segment1[1][2] and y >= segment1[2][2]))
-
-	local result2 = ((x >= segment2[1][1] and x <= segment2[2][1]) or (x <= segment2[1][1] and x >= segment2[2][1])) and
-		((y >= segment2[1][2] and y <= segment2[2][2]) or (y <= segment2[1][2] and y >= segment2[2][2]))
-
-	return result1 and result2
+	return result1X and result1Y and result2X and result2Y
 end
 
 function VisibilityGraph:connectObjectVertices(vertices)
@@ -116,7 +125,13 @@ function VisibilityGraph:connectObjectVertices(vertices)
 
 		for other, otherConnections in pairs(self.connectedVertices) do
 			if vertex ~= other then
-				local angle = getVectAngle({other[1] - vertex[1], other[2] - vertex[2]})
+				local vect = {other[1] - vertex[1], other[2] - vertex[2]}
+
+				if vect[1] == 0 and vect[2] == 0 then
+					goto skip
+				end
+
+				local angle = getVectAngle(vect)
 				angles:insert(angle)
 
 				if sortedVertices[angle] then
@@ -124,6 +139,7 @@ function VisibilityGraph:connectObjectVertices(vertices)
 				else
 					sortedVertices[angle] = {other}
 				end
+				::skip::
 			end
 		end
 
@@ -158,7 +174,7 @@ function VisibilityGraph:connectObjectVertices(vertices)
 				index = 1
 			end
 
-			if firstAngle < lastAngle and currentAngle > firstAngle and currentAngle < lastAngle then
+			if firstAngle < lastAngle and (currentAngle > firstAngle and currentAngle < lastAngle) then
 				goto continue
 			elseif firstAngle > lastAngle and (currentAngle > firstAngle or currentAngle < lastAngle) then
 				goto continue
@@ -178,8 +194,8 @@ function VisibilityGraph:connectObjectVertices(vertices)
 			::continue::
 
 			if self.connectedVertices[other] then
-				connection1 = self.connectedVertices[other][1]
-				connection2 = self.connectedVertices[other][2]
+				local connection1 = self.connectedVertices[other][1]
+				local connection2 = self.connectedVertices[other][2]
 
 				if obstacles[other] then
 					obstacles[other] = nil
@@ -212,7 +228,13 @@ function VisibilityGraph:connectSimpleVertices(vertices, allSimpleVertices)
 		graph[vertex] = {}
 
 		for other, otherConnections in pairs(self.connectedVertices) do
-			local angle = getVectAngle({other[1] - vertex[1], other[2] - vertex[2]})
+			local vect = {other[1] - vertex[1], other[2] - vertex[2]}
+
+			if vect[1] == 0 and vect[2] == 0 then
+				goto skip
+			end
+
+			local angle = getVectAngle(vect)
 			angles:insert(angle)
 
 			if sortedVertices[angle] then
@@ -220,6 +242,8 @@ function VisibilityGraph:connectSimpleVertices(vertices, allSimpleVertices)
 			else
 				sortedVertices[angle] = {other}
 			end
+
+			::skip::
 		end
 
 		for k, other in pairs(allSimpleVertices) do

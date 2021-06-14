@@ -8,6 +8,7 @@ function EntityIdleState:init(originalEntity)
 	self.image = originalEntity.image
 	self.quad = originalEntity.quad
 	self.box = originalEntity.box
+	self.damage = originalEntity.damage
 	self.hurt = originalEntity.hurt
 	self.stateDecision = originalEntity.stateDecision['idle']
 	self.animation = AnimationState(originalEntity.animation()['idle'])

@@ -9,25 +9,31 @@ function PlayerWalkState:init(player, playState)
 	self.scale = player.scale
 	self.height = player.height
 	self.width = player.width
+	self.health = player.health
 
 	self.image = player.images['walk']
 	self.frame = player.frames['walk']
 
-	self.animation = AnimationState(player.animation()['walk'])
+	self.headAnimation = AnimationState(player.headAnimation()['walk'])
+	self.bodyAnimation = AnimationState(player.bodyAnimation()['walk'])
 	self.hurtBox = player.hurtBoxes['walk']
+	self.hurt = player.hurt
+
 	self.onCollide = {
 		['right'] = function(block) self.x = block.x - self.width end,
 		['left'] = function(block) self.x = block.x + block.width end,
-		['up'] = function(block) self.y = block.y + block.height - 20 end,
-		['down'] = function(block) self.y = block.y - self.height - 5 end,
+		['up'] = function(block) self.y = block.y + block.height end,
+		['down'] = function(block) self.y = block.y - self.height end,
 	}
 end
 
 function PlayerWalkState:open(param)
 	self.x = param.x
 	self.y = param.y
+	self.health = param.health or self.health
 	self.direction = param.direction
-	self.animation:change(param.direction)
+	self.headAnimation:change(param.direction)
+	self.bodyAnimation:change(param.direction)
 	self.currentRoom = param.currentRoom
 	local currentRoom = self.currentRoom
 	self.offsetX = currentRoom.initialX + currentRoom.offsetX
@@ -38,38 +44,84 @@ end
 
 function PlayerWalkState:update(dt)
 	if not (love.keyboard.isDown('left') or love.keyboard.isDown('up') or love.keyboard.isDown('right') or love.keyboard.isDown('down')) then
-		self.player:change('idle', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
+		self.player:change('idle', {x = self.x, y = self.y, direction = self.direction, movement = self.movement, currentRoom = self.currentRoom, health = self.health})
 		return nil
 	end
 
 	if love.keyboard.isDown('up') and not self.up then
 		self.y = self.y - self.speed*dt
+		self.movement = 'up'
 		self.direction = 'up'
-		self.animation:change('up')
+		self.headAnimation:change('up')
+		self.bodyAnimation:change('up')
 	end
 	if love.keyboard.isDown('right') and not self.right then
 		self.x = self.x + self.speed*dt
+		self.movement = 'right'
 		self.direction = 'right'
-		self.animation:change('right')
+		self.headAnimation:change('right')
+		self.bodyAnimation:change('right')
 	end
 	if love.keyboard.isDown('down') and not self.down then
 		self.y = self.y + self.speed*dt
+		self.movement = 'down'
 		self.direction = 'down'
-		self.animation:change('down')
+		self.headAnimation:change('down')
+		self.bodyAnimation:change('down')
 	end
 	if love.keyboard.isDown('left') and not self.left then
 		self.x = self.x - self.speed*dt
+		self.movement = 'left'
 		self.direction = 'left'
-		self.animation:change('left')
+		self.headAnimation:change('left')
+		self.bodyAnimation:change('left')
 	end
 
-	self.up, self.down, self.left, self.right = checkPlayerCollision(self:hurtBox(), self.quadTree:query(self:hurtBox()), self.entities, self.onCollide, self)
+	if love.keyboard.isDown('w') then
+		self.direction = 'up'
+		self.headAnimation:change('up')
+	end
+	if love.keyboard.isDown('a') then
+		self.direction = 'left'
+		self.headAnimation:change('left')
+	end
+	if love.keyboard.isDown('s') then
+		self.direction = 'down'
+		self.headAnimation:change('down')
+	end
+	if love.keyboard.isDown('d') then
+		self.direction = 'right'
+		self.headAnimation:change('right')
+	end
+
+	self.up, self.down, self.left, self.right = checkPlayerCollision(self, self.quadTree:query(self:hurtBox()), self.entities, self.onCollide)
 
 	if love.keyboard.wasPressed('space') then
-		self.player:change('swingSword', {x = self.x, y = self.y, direction = self.direction, currentRoom = self.currentRoom})
+		local angle
+		local x
+		local y
+		if self.direction == 'right' then
+			angle = 0
+			x = self.x + self.width
+			y = self.y + self.height/2
+		elseif self.direction == 'down' then
+			angle = math.pi/2
+			x = self.x + self.width/2
+			y = self.y + self.height
+		elseif self.direction == 'left' then
+			angle = math.pi
+			x = self.x - self.width
+			y = self.y + self.height/2
+		elseif self.direction == 'up' then
+			angle = 3*math.pi/2
+			x = self.x + self.width/2
+			y = self.y - self.height
+		end
+		table.insert(self.currentRoom.balls, Ball(x, y, angle, self.currentRoom))
 	end
 
-	self.animation:update(dt)
+	self.headAnimation:update(dt)
+	self.bodyAnimation:update(dt)
 end
 
 function PlayerWalkState:shift(direction)
@@ -103,16 +155,17 @@ function AABB(entity1, entity2)
 	return true
 end
 
-function checkPlayerCollision(entity, objects, otherEntities, onCollide, self)
+function checkPlayerCollision(player, objects, otherEntities, onCollide)
+	local box = player:hurtBox()
 	local down
 	local up
 	local left
 	local right
 
 	for k, block in pairs(objects) do
-		if AABB(entity, block.box) then
-			local result = collision(entity, block.box)
-			block:onCollide(self)
+		if AABB(box, block.box) then
+			local result = collision(box, block.box)
+			block:onCollide(player)
 
 			if result == 'down' then
 				onCollide['down'](block.box)
@@ -132,20 +185,21 @@ function checkPlayerCollision(entity, objects, otherEntities, onCollide, self)
 
 	for k, other in pairs(otherEntities) do
 		local current = other.current
-		if AABB(entity, current:box()) then
-			local result = collision(entity, current:box())
+		if AABB(box, current:box()) then
+			player:hurt(current.damage)
+			local result = collision(box, current:box())
 
 			if result == 'down' then
-				current.onCollide['up'](entity)
+				current.onCollide['up'](box)
 				down = true
 			elseif result == 'right' then
-				current.onCollide['left'](entity)
+				current.onCollide['left'](box)
 				right = true
 			elseif result == 'left' then
-				current.onCollide['right'](entity)
+				current.onCollide['right'](box)
 				left = true
 			elseif result == 'up' then
-				current.onCollide['down'](entity)
+				current.onCollide['down'](box)
 				up = true
 			end
 		end
@@ -178,6 +232,7 @@ function collision(entity1, entity2)
 end
 
 function PlayerWalkState:draw()
-	love.graphics.draw(images[self.image], frames[self.frame][self.animation:getCurrentFrame()], self.x, self.y - 20, 0, self.scale, self.scale)
-	love.graphics.rectangle('line', self.x, self.y + 20, self.width, self.height - 15)
+	love.graphics.draw(images[self.image], frames[self.frame][self.bodyAnimation:getCurrentFrame()], self.x, self.y, 0, self.scale, self.scale)
+	love.graphics.draw(images[self.image], frames[self.frame][self.headAnimation:getCurrentFrame()], self.x - 4.5, self.y - 32, 0, self.scale, self.scale)
+	love.graphics.rectangle('line', self.x, self.y, self.width, self.height)
 end

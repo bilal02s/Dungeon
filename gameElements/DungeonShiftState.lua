@@ -10,14 +10,35 @@ function DungeonShiftState:open(param)
 	self.player = param.player
 	self.direction = param.direction
 	self.player.current.direction = self.direction
-	self.player.current.animation:change(self.direction)
+	self.player.current.bodyAnimation:change(self.direction)
+	self.player.current.headAnimation:change(self.direction)
 
-	self.nextOffsetX = self.nextRoom.offsetX
-	self.nextOffsetY = self.nextRoom.offsetY
+	local nextOffsetX = self.nextRoom.offsetX
+	local nextOffsetY = self.nextRoom.offsetY
+	local nextX
+	local nextY
 
-	Timer.tween(0.5, {
-		[self.playState] = {cameraX = self.nextOffsetX, cameraY = self.nextOffsetY},
-		[self.player.current] = {x = self.nextOffsetX + Width/2, y = self.nextOffsetY + Height/2}
+	local k
+	local precisionX = 0
+	local precisionY = 0
+	if self.direction == 'right' then
+		k = 1
+	elseif self.direction == 'up' then
+		k = 4
+		precisionY = -2
+	elseif self.direction == 'left' then
+		k = 3
+		precisionX = -2
+	elseif self.direction == 'down' then
+		k = 2
+	end
+
+	nextX = self.nextRoom.totalOffsetX + (self.nextRoom.doors[k][1] + precisionX)*tileLength
+	nextY = self.nextRoom.totalOffsetY + (self.nextRoom.doors[k][2] + precisionY)*tileLength
+
+	Timer.tween(0.25, {
+		[self.playState] = {cameraX = nextOffsetX, cameraY = nextOffsetY},
+		[self.player.current] = {x = nextX , y = nextY}
 	}, function()
 		self.player:changeRoom(self.nextRoom)
 		self.playState:change('play', {player = self.player, currentRoom = self.nextRoom})
@@ -25,7 +46,7 @@ function DungeonShiftState:open(param)
 end
 
 function DungeonShiftState:update(dt)
-	self.player.current.animation:update(dt)
+	self.player.current.bodyAnimation:update(dt)
 end
 
 function DungeonShiftState:draw()
